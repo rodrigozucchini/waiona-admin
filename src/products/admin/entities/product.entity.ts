@@ -1,9 +1,9 @@
-import { BaseEntity } from "../../common/entities/base.entity";
+import { BaseEntity } from "src/common/entities/base.entity";
 import { TaxEntity } from "src/pricing/taxes/admin/entities/tax.entity";
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany } from "typeorm";
-import { ComboProductEntity } from "../admin/combos/entities/combo-product.entity";
+import { ComboProductEntity } from "../combos/entities/combo-product.entity";
 import { ProductType } from "src/common/enums/product-type.enum";
-import { ProductImageEntity } from '../admin/images/entities/product-image.entity'
+import { ProductImageEntity } from "../images/entities/product-image.entity";
 import { MarginEntity } from "src/pricing/margins/admin/entities/margin.entity";
 
 @Entity('products')

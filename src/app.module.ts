@@ -4,13 +4,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-import { ProductsModule } from './products/products.module';
-import { TaxesModule } from './pricing/taxes/taxes.module';
-import { MarginsModule } from './pricing/margins/margins.module';
-import { DiscountsModule } from './pricing/discounts/discounts.module';
-import { TaxTypesModule } from './pricing/tax-types/tax-types.module';
-import { DiscountTypesModule } from './pricing/discount-types/discount-types.module';
-import { ImagesService } from './images/images/images.service';
+import { ProductsModule } from './products/admin/products.admin.module';
+import { TaxesModule } from './pricing/taxes/admin/taxes.admin.module';
+import { MarginsModule } from './pricing/margins/admin/margins.admin.module';
+import { DiscountsModule } from './pricing/discounts/admin/discounts.admin.module';
+import { TaxTypesModule } from './pricing/tax-types/admin/tax-types.admin.module';
+import { DiscountTypesModule } from './pricing/discount-types/admin/discount-types.admin.module';
 import { UsersModule } from './users/users.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { RolesModule } from './roles/roles.module';
@@ -44,6 +43,6 @@ import { ProfilesModule } from './profiles/profiles.module';
     ProfilesModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ImagesService],
+  providers: [AppService],
 })
 export class AppModule {}
