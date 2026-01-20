@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,19 +16,28 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { RolesModule } from './roles/roles.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfilesModule } from './profiles/profiles.module';
+import { Env } from './env.model';
 
 @Module({
   imports: [
-    // 🔥 ACA SE CREA EL DATASOURCE
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',        // Nest corre en tu PC
-      port: 5432,
-      username: 'waiona_user',
-      password: 'waiona_password',
-      database: 'waiona_db',
-      autoLoadEntities: true,
-      synchronize: true,       // solo dev
+    // 🔥 Config global
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+
+    // 🔥 TypeORM usando variables de entorno
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService<Env>) => ({
+        type: 'postgres',
+        host: config.get('POSTGRES_HOST', { infer: true }),
+        port: config.get('POSTGRES_PORT', { infer: true }),
+        username: config.get('POSTGRES_USER' , { infer: true }),
+        password: config.get('POSTGRES_PASSWORD' , { infer: true }),
+        database: config.get('POSTGRES_DB', { infer: true }),
+        autoLoadEntities: true,
+        synchronize: true, // solo dev
+      }),
     }),
 
     ProductsModule,
