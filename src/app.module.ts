@@ -19,6 +19,7 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { Env } from './env.model';
 import { CombosModule } from './products/combos/combos.module';
 import { CombosAdminModule } from './products/combos/admin/combos.admin.module';
+import { ProductsAdminModule } from './products/admin/products.admin.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { CombosAdminModule } from './products/combos/admin/combos.admin.module';
     DiscountTypesModule,
     CombosModule, // 👈 entidades
     CombosAdminModule,
+    ProductsAdminModule,
     // 🔥 Core system
     UsersModule,
     PermissionsModule,

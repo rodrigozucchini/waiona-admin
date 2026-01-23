@@ -1,4 +1,13 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { RoleEntity } from './entities/role.entity';
 
-@Module({})
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([RoleEntity]),
+  ],
+  exports: [
+    TypeOrmModule, // 🔥 clave
+  ],
+})
 export class RolesModule {}

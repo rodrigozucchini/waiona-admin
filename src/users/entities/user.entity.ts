@@ -5,12 +5,16 @@ import {
     JoinColumn,
     ManyToOne,
     Index,
+    BeforeInsert,
   } from 'typeorm';
+
+  import * as bcrypt from 'bcrypt';
   
   import { BaseEntity } from 'src/common/entities/base.entity';
   import { PersonEntity } from '../../common/entities/person.entity';
   import { UserStatus } from '../../common/enums/user-status.enum';
   import { RoleEntity } from 'src/roles/entities/role.entity';
+import { Exclude } from 'class-transformer';
   
   @Entity('users')
   @Index(['person'], { unique: true }) // una persona = un usuario
@@ -31,6 +35,7 @@ import {
     // ================= SECURITY =================
   
     // bcrypt hash -> 60 chars aprox, dejamos margen
+    @Exclude()
     @Column({ length: 255, nullable: false })
     password: string;
   
@@ -53,5 +58,12 @@ import {
   
     @Column({ type: 'timestamp', nullable: true })
     lastLoginAt?: Date;
+
+
+    // ================= FOR PASSWORD =============
+    @BeforeInsert()
+    async hasPassword() {
+      this.password = await bcrypt.hash(this.password, 10);
+    }
   }
   

@@ -6,7 +6,7 @@ import { CreateUserClientDto } from './dto/create-user-client.dto';
 import { ChangePasswordClientDto } from './dto/change-password-client.dto';
 import { UpdateUserClientDto } from './dto/update-user-client.dto';
 
-@Controller('users')
+@Controller('client/users')
 export class UsersClientController {
   constructor(private readonly userClientService: UsersClientService) {}
 

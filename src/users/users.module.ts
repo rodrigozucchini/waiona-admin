@@ -1,4 +1,10 @@
 import { Module } from '@nestjs/common';
+import { UsersClientModule } from './client/user.client.module';
 
-@Module({})
+@Module({
+  imports: [
+    UsersClientModule,
+  ],
+})
 export class UsersModule {}
+

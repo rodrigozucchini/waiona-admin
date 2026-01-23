@@ -14,7 +14,4 @@ export class UserResponseClientDto {
   documentNumber?: string;
   lastLoginAt?: Date;
   emailVerified: boolean;
-
-  @Exclude()
-  password?: string;
 }
