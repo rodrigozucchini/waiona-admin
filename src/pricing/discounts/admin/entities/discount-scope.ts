@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/common/entities/base.entity';
+import { BaseEntity } from '../../../../common/entities/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne, Index } from 'typeorm';
 import { DiscountEntity } from './discount.entity';
 import { ComboEntity } from 'src/products/combos/entities/combo.entity';

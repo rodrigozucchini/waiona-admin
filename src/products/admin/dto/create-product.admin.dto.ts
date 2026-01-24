@@ -10,7 +10,7 @@ import {
   ArrayNotEmpty,
   ArrayUnique,
 } from 'class-validator';
-import { ProductType } from 'src/common/enums/product-type.enum';
+import { ProductType } from '../../../common/enums/product-type.enum';
 
 export class CreateProductAdminDto {
   @IsString()

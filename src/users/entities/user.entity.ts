@@ -10,10 +10,10 @@ import {
 
   import * as bcrypt from 'bcrypt';
   
-  import { BaseEntity } from 'src/common/entities/base.entity';
+  import { BaseEntity } from '../../common/entities/base.entity';
   import { PersonEntity } from '../../common/entities/person.entity';
   import { UserStatus } from '../../common/enums/user-status.enum';
-  import { RoleEntity } from 'src/roles/entities/role.entity';
+  import { RoleEntity } from '../../roles/entities/role.entity';
 import { Exclude } from 'class-transformer';
   
   @Entity('users')

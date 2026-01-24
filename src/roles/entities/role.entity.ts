@@ -1,5 +1,5 @@
-import { BaseEntity } from 'src/common/entities/base.entity';
-import { PermissionEntity } from 'src/permissions/entities/permission.entity';
+import { BaseEntity } from '../../common/entities/base.entity';
+import { PermissionEntity } from '../../permissions/entities/permission.entity';
 import { RoleType } from '../../common/enums/role-type.enum';
 import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 

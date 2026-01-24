@@ -4,8 +4,8 @@ import { Repository, In } from 'typeorm';
 import { ProductEntity } from '../entities/product.entity';
 import { CreateProductAdminDto } from './dto/create-product.admin.dto';
 import { UpdateProductAdminDto } from './dto/update-product.admin.dto';
-import { MarginEntity } from 'src/pricing/margins/admin/entities/margin.entity';
-import { TaxEntity } from 'src/pricing/taxes/admin/entities/tax.entity';
+import { MarginEntity } from '../../pricing/margins/admin/entities/margin.entity';
+import { TaxEntity } from '../../pricing/taxes/admin/entities/tax.entity';
 
 @Injectable()
 export class ProductsAdminService {
