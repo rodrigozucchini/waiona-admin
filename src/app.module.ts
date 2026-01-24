@@ -39,7 +39,7 @@ import { ProductsAdminModule } from './products/admin/products.admin.module';
         password: config.get('POSTGRES_PASSWORD', { infer: true }),
         database: config.get('POSTGRES_DB', { infer: true }),
         autoLoadEntities: true,
-        synchronize: true, // solo dev
+        synchronize: false,
       }),
     }),
 

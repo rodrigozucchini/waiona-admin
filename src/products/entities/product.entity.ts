@@ -1,5 +1,5 @@
-import { BaseEntity } from 'src/common/entities/base.entity';
-import { TaxEntity } from 'src/pricing/taxes/admin/entities/tax.entity';
+import { BaseEntity } from '../../common/entities/base.entity';
+import { TaxEntity } from '../../pricing/taxes/admin/entities/tax.entity';
 import {
   Column,
   Entity,
@@ -10,9 +10,9 @@ import {
   OneToMany,
 } from 'typeorm';
 import { ComboProductEntity } from '../combos/entities/combo-product.entity';
-import { ProductType } from 'src/common/enums/product-type.enum';
+import { ProductType } from '../../common/enums/product-type.enum';
 import { ProductImageEntity } from '../images/entities/product-image.entity';
-import { MarginEntity } from 'src/pricing/margins/admin/entities/margin.entity';
+import { MarginEntity } from '../../pricing/margins/admin/entities/margin.entity';
 
 @Entity('products')
 export class ProductEntity extends BaseEntity {
