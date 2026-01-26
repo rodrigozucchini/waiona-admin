@@ -7,7 +7,7 @@ import { AppService } from './app.service';
 
 import { ProductsModule } from './products/products.module';
 import { TaxesModule } from './pricing/taxes/admin/taxes.admin.module';
-import { MarginsModule } from './pricing/margins/admin/margins.admin.module';
+import { MarginsModule } from './pricing/margins/margins.module';
 import { DiscountsModule } from './pricing/discounts/admin/discounts.admin.module';
 import { TaxTypesModule } from './pricing/tax-types/admin/tax-types.admin.module';
 import { DiscountTypesModule } from './pricing/discount-types/admin/discount-types.admin.module';
@@ -20,6 +20,8 @@ import { Env } from './env.model';
 import { CombosModule } from './products/combos/combos.module';
 import { CombosAdminModule } from './products/combos/admin/combos.admin.module';
 import { ProductsAdminModule } from './products/admin/products.admin.module';
+import { CategoriesModule } from './categories/categories.module';
+import { CategoriesAdminService } from './categories/admin/categories.admin.service';
 
 @Module({
   imports: [
@@ -59,8 +61,9 @@ import { ProductsAdminModule } from './products/admin/products.admin.module';
     RolesModule,
     AuthModule,
     ProfilesModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, CategoriesAdminService],
 })
 export class AppModule {}

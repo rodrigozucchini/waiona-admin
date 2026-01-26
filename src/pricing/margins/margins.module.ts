@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MarginsAdminService } from './margins.admin.service';
-import { MarginsAdminController } from './margins.admin.controller';
+import { MarginsAdminService } from './admin/margins.admin.service';
+import { MarginsAdminController } from './admin/margins.admin.controller';
 import { MarginEntity } from './entities/margin.entity';
 
 @Module({

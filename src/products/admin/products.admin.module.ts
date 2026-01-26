@@ -7,7 +7,7 @@ import { ProductsModule } from '../products.module';
 import { ImagesAdminModule } from '../images/admin/images.admin.module';
 import { CombosAdminModule } from '../combos/admin/combos.admin.module';
 import { TaxesModule } from 'src/pricing/taxes/admin/taxes.admin.module';
-import { MarginsModule } from 'src/pricing/margins/admin/margins.admin.module';
+import { MarginsModule } from 'src/pricing/margins/margins.module';
 
 @Module({
   imports: [

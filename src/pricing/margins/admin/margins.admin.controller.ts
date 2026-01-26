@@ -6,6 +6,7 @@ import {
   Param,
   Put,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { MarginsAdminService } from './margins.admin.service';
 import { CreateMarginAdminDto } from './dto/create-margin.admin.dto';
@@ -26,17 +27,20 @@ export class MarginsAdminController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.marginService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.marginService.findOne(id);
   }
 
   @Put(':id')
-  update(@Param('id') id: number, @Body() dto: UpdateMarginAdminDto) {
-    return this.marginService.update(+id, dto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateMarginAdminDto,
+  ) {
+    return this.marginService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.marginService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.marginService.remove(id);
   }
 }
