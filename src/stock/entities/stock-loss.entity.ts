@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne } from 'typeorm';
-import { BaseEntity } from 'src/common/entities/base.entity';
-import { ProductEntity } from 'src/products/entities/product.entity';
-import { StockLossReason } from 'src/common/enums/stock-loss-reason.enum';
+import { BaseEntity } from '../../common/entities/base.entity';
+import { ProductEntity } from '../../products/entities/product.entity';
+import { StockLossReason } from '../../common/enums/stock-loss-reason.enum';
 
 @Entity('stock_losses')
 export class StockLossEntity extends BaseEntity {

@@ -8,19 +8,19 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
-  Index,
 } from 'typeorm';
 import { ComboProductEntity } from '../combos/entities/combo-product.entity';
 import { ProductType } from '../../common/enums/product-type.enum';
 import { ProductImageEntity } from '../images/entities/product-image.entity';
 import { MarginEntity } from '../../pricing/margins/entities/margin.entity';
+import { MeasureUnit } from '../../common/enums/measure-unit.enum';
 import { CategoryEntity } from '../../categories/entities/category.entity';
 
 @Entity('products')
-@Index(['sku'])
-@Index(['name'])
 export class ProductEntity extends BaseEntity {
-  // ================= Datos básicos =================
+  // ==========================
+  // Datos básicos
+  // ==========================
 
   @Column({ unique: true, length: 50 })
   sku: string;
@@ -40,20 +40,35 @@ export class ProductEntity extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 2 })
   basePrice: number;
 
-  // ================= Estados =================
+  // ==========================
+  // Medidas / peso / volumen
+  // ==========================
 
-  @Column({ default: true })
-  isActive: boolean; // se vende o no
+  @Column({
+    type: 'enum',
+    enum: MeasureUnit,
+    nullable: true,
+  })
+  measureUnit?: MeasureUnit;
 
-  @Column({ default: true })
-  isVisible: boolean; // visible en catálogo / ecommerce
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 3,
+    nullable: true,
+  })
+  measureValue?: number; // ej: 200 (ml), 1.5 (kg)
 
-  // ================= Relaciones =================
+  // ==========================
+  // Relaciones
+  // ==========================
 
   // Categoría
-  @ManyToOne(() => CategoryEntity, { nullable: false })
+  @ManyToOne(() => CategoryEntity, (category) => category.products, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'category_id' })
-  category: CategoryEntity;
+  category?: CategoryEntity;
 
   // Combos
   @OneToMany(() => ComboProductEntity, (comboProduct) => comboProduct.product)
@@ -66,9 +81,9 @@ export class ProductEntity extends BaseEntity {
   // Margen
   @ManyToOne(() => MarginEntity, { nullable: true })
   @JoinColumn({ name: 'margin_id' })
-  margin: MarginEntity;
+  margin: MarginEntity | null;
 
-  // Impuestos (SIEMPRE a producto, bien hecho)
+  // Impuestos
   @ManyToMany(() => TaxEntity)
   @JoinTable({
     name: 'product_taxes',

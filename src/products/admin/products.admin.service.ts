@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
+
 import { ProductEntity } from '../entities/product.entity';
 import { CreateProductAdminDto } from './dto/create-product.admin.dto';
 import { UpdateProductAdminDto } from './dto/update-product.admin.dto';
@@ -20,6 +21,9 @@ export class ProductsAdminService {
     private readonly taxRepository: Repository<TaxEntity>,
   ) {}
 
+  /* =======================
+      CREATE
+  ======================= */
   async create(dto: CreateProductAdminDto) {
     const product = this.productRepository.create({
       sku: dto.sku,
@@ -27,77 +31,115 @@ export class ProductsAdminService {
       description: dto.description,
       type: dto.type,
       basePrice: dto.basePrice,
+      margin: dto.marginId
+        ? await this.resolveMargin(dto.marginId)
+        : null,
+      taxes: dto.taxIds?.length
+        ? await this.resolveTaxes(dto.taxIds)
+        : [],
     });
-
-    if (dto.marginId) {
-      product.margin = await this.marginRepository.findOneBy({
-        id: dto.marginId,
-        isDeleted: false,
-      });
-    }
-
-    if (dto.taxIds?.length) {
-      product.taxes = await this.taxRepository.find({
-        where: { id: In(dto.taxIds), isDeleted: false },
-      });
-    }
 
     return this.productRepository.save(product);
   }
 
+  /* =======================
+      FIND
+  ======================= */
   findAll() {
     return this.productRepository.find({
       where: { isDeleted: false },
-      relations: ['images', 'images.image', 'margin', 'taxes', 'taxes.taxType'],
+      relations: [
+        'images',
+        'images.image',
+        'margin',
+        'taxes',
+        'taxes.taxType',
+      ],
     });
   }
 
   async findOne(id: number) {
     const product = await this.productRepository.findOne({
       where: { id, isDeleted: false },
-      relations: ['images', 'images.image', 'margin', 'taxes', 'taxes.taxType'],
+      relations: [
+        'images',
+        'images.image',
+        'margin',
+        'taxes',
+        'taxes.taxType',
+      ],
     });
 
-    if (!product) throw new NotFoundException('Product not found');
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
 
     return product;
   }
 
+  /* =======================
+      UPDATE
+  ======================= */
   async update(id: number, dto: UpdateProductAdminDto) {
     const product = await this.findOne(id);
 
-    // Actualización de campos simples
-    if (dto.sku !== undefined) product.sku = dto.sku;
-    if (dto.name !== undefined) product.name = dto.name;
-    if (dto.description !== undefined) product.description = dto.description;
-    if (dto.type !== undefined) product.type = dto.type;
-    if (dto.basePrice !== undefined) product.basePrice = dto.basePrice;
+    Object.assign(product, {
+      sku: dto.sku ?? product.sku,
+      name: dto.name ?? product.name,
+      description: dto.description ?? product.description,
+      type: dto.type ?? product.type,
+      basePrice: dto.basePrice ?? product.basePrice,
+    });
 
-    // Actualización de margen
     if (dto.marginId !== undefined) {
       product.margin = dto.marginId
-        ? await this.marginRepository.findOneBy({
-            id: dto.marginId,
-            isDeleted: false,
-          })
+        ? await this.resolveMargin(dto.marginId)
         : null;
     }
 
-    // Actualización de impuestos
     if (dto.taxIds !== undefined) {
       product.taxes = dto.taxIds.length
-        ? await this.taxRepository.find({
-            where: { id: In(dto.taxIds), isDeleted: false },
-          })
+        ? await this.resolveTaxes(dto.taxIds)
         : [];
     }
 
     return this.productRepository.save(product);
   }
 
+  /* =======================
+      DELETE (SOFT)
+  ======================= */
   async remove(id: number) {
     const product = await this.findOne(id);
     product.isDeleted = true;
     return this.productRepository.save(product);
+  }
+
+  /* =======================
+      HELPERS
+  ======================= */
+  private async resolveMargin(marginId: number): Promise<MarginEntity> {
+    const margin = await this.marginRepository.findOneBy({
+      id: marginId,
+      isDeleted: false,
+    });
+
+    if (!margin) {
+      throw new NotFoundException(`Margin ${marginId} not found`);
+    }
+
+    return margin;
+  }
+
+  private async resolveTaxes(taxIds: number[]): Promise<TaxEntity[]> {
+    const taxes = await this.taxRepository.find({
+      where: { id: In(taxIds), isDeleted: false },
+    });
+
+    if (taxes.length !== taxIds.length) {
+      throw new NotFoundException('One or more taxes not found');
+    }
+
+    return taxes;
   }
 }
