@@ -6,8 +6,9 @@ export class CreateStockLossAdminDto {
     @Min(1)
     productId: number;
   
-    @IsInt()
-    quantity: number;
+  @IsInt()
+  @Min(1)
+  quantity: number;
   
     @IsEnum(StockLossReason)
     reason: StockLossReason;
