@@ -80,6 +80,17 @@ The API is organized into **client** and **admin** namespaces:
   - Base: `/admin/pricing/margins`
   - Controller: `src/pricing/margins/admin/margins.admin.controller.ts`
 
+## Stock (data models & DTOs)
+- Stock tables and entities exist for:
+  - `stocks`
+  - `stock_parameters`
+  - `stock_movements`
+  - `stock_losses`
+- DTOs live in `src/stock/dto` and include:
+  - create/update stock parameters
+  - create stock movements and losses
+  - response DTOs for stock, movements, and losses
+
 ## Implementation notes & conventions
 - Consistent admin prefix: `/admin/...`.
 - Most endpoints are standard CRUD (POST, GET, PUT, DELETE).

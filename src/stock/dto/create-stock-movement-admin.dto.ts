@@ -3,10 +3,12 @@ import { StockMovementType } from '../../common/enums/stock-movement-type.enum';
 
 export class CreateStockMovementAdminDto {
   @IsInt()
+  @Min(1)
   productId: number;
 
   @IsInt()
-  quantity: number; // puede ser + o -
+  @Min(1)
+  quantity: number;
 
   @IsEnum(StockMovementType)
   type: StockMovementType;
