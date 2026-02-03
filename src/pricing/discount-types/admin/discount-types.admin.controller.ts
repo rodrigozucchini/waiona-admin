@@ -11,7 +11,7 @@ import { DiscountTypesAdminService } from './discount-types.admin.service';
 import { CreateDiscountTypeAdminDto } from './dto/create-discount-type.admin.dto';
 import { UpdateDiscountTypeAdminDto } from './dto/update-discount-type.admin.dto';
 
-@Controller('pricing/discount-types')
+@Controller('admin/pricing/discount-types')
 export class DiscountTypesAdminController {
   constructor(
     private readonly discountTypesService: DiscountTypesAdminService,
