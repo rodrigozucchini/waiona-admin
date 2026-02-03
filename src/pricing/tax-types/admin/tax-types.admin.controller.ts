@@ -6,6 +6,7 @@ import {
   Param,
   Put,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TaxTypesAdminService } from './tax-types.admin.service';
 import { CreateTaxTypeAdminDto } from './dto/create-tax-type.admin.dto';
@@ -26,17 +27,20 @@ export class TaxTypesAdminController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.taxTypeService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.taxTypeService.findOne(id);
   }
 
   @Put(':id')
-  update(@Param('id') id: number, @Body() dto: UpdateTaxTypeAdminDto) {
-    return this.taxTypeService.update(+id, dto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateTaxTypeAdminDto,
+  ) {
+    return this.taxTypeService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.taxTypeService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.taxTypeService.remove(id);
   }
 }

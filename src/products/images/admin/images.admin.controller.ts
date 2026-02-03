@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 
 import { ImagesAdminService } from './images.admin.service';
@@ -33,18 +34,21 @@ export class ImagesAdminController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.imagesService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.imagesService.findOne(id);
   }
 
   @Put(':id') // <- reemplazado PATCH por PUT
-  update(@Param('id') id: number, @Body() dto: UpdateImageAdminDto) {
-    return this.imagesService.update(+id, dto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateImageAdminDto,
+  ) {
+    return this.imagesService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.imagesService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.imagesService.remove(id);
   }
 
   // =========================
@@ -57,8 +61,10 @@ export class ImagesAdminController {
   }
 
   @Get('product/:productId')
-  getImagesByProduct(@Param('productId') productId: number) {
-    return this.imagesService.getImagesByProduct(+productId);
+  getImagesByProduct(
+    @Param('productId', ParseIntPipe) productId: number,
+  ) {
+    return this.imagesService.getImagesByProduct(productId);
   }
 
   // =========================
@@ -71,7 +77,7 @@ export class ImagesAdminController {
   }
 
   @Get('combo/:comboId')
-  getImagesByCombo(@Param('comboId') comboId: number) {
-    return this.imagesService.getImagesByCombo(+comboId);
+  getImagesByCombo(@Param('comboId', ParseIntPipe) comboId: number) {
+    return this.imagesService.getImagesByCombo(comboId);
   }
 }

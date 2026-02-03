@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   Put,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { DiscountTypesAdminService } from './discount-types.admin.service';
 import { CreateDiscountTypeAdminDto } from './dto/create-discount-type.admin.dto';
@@ -28,17 +29,20 @@ export class DiscountTypesAdminController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.discountTypesService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.discountTypesService.findOne(id);
   }
 
   @Put(':id')
-  update(@Param('id') id: number, @Body() dto: UpdateDiscountTypeAdminDto) {
-    return this.discountTypesService.update(+id, dto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateDiscountTypeAdminDto,
+  ) {
+    return this.discountTypesService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.discountTypesService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.discountTypesService.remove(id);
   }
 }

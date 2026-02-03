@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 
 import { CombosAdminService } from './combos.admin.service';
@@ -33,18 +34,21 @@ export class CombosAdminController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.combosService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.combosService.findOne(id);
   }
 
   @Put(':id') // <- reemplazado PATCH por PUT
-  update(@Param('id') id: number, @Body() dto: UpdateComboAdminDto) {
-    return this.combosService.update(+id, dto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateComboAdminDto,
+  ) {
+    return this.combosService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.combosService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.combosService.remove(id);
   }
 
   // =========================
@@ -58,19 +62,19 @@ export class CombosAdminController {
 
   @Put('product/:id') // <- reemplazado PATCH por PUT
   updateComboProduct(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateComboProductAdminDto,
   ) {
-    return this.combosService.updateComboProduct(+id, dto);
+    return this.combosService.updateComboProduct(id, dto);
   }
 
   @Delete('product/:id')
-  removeComboProduct(@Param('id') id: number) {
-    return this.combosService.removeComboProduct(+id);
+  removeComboProduct(@Param('id', ParseIntPipe) id: number) {
+    return this.combosService.removeComboProduct(id);
   }
 
   @Get(':id/products')
-  getProductsByCombo(@Param('id') id: number) {
-    return this.combosService.getProductsByCombo(+id);
+  getProductsByCombo(@Param('id', ParseIntPipe) id: number) {
+    return this.combosService.getProductsByCombo(id);
   }
 }
