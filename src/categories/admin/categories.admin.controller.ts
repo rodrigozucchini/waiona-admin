@@ -6,6 +6,7 @@ import {
     Param,
     Put,
     Delete,
+    ParseIntPipe,
   } from '@nestjs/common';
   import { CategoriesAdminService } from './categories.admin.service';
   import { CreateCategoryAdminDto } from './dto/create-category.admin.dto';
@@ -26,21 +27,21 @@ import {
     }
   
     @Get(':id')
-    findOne(@Param('id') id: number) {
-      return this.categoriesService.findOne(+id);
+    findOne(@Param('id', ParseIntPipe) id: number) {
+      return this.categoriesService.findOne(id);
     }
-  
+
     @Put(':id')
     update(
-      @Param('id') id: number,
+      @Param('id', ParseIntPipe) id: number,
       @Body() dto: UpdateCategoryAdminDto,
     ) {
-      return this.categoriesService.update(+id, dto);
+      return this.categoriesService.update(id, dto);
     }
-  
+
     @Delete(':id')
-    remove(@Param('id') id: number) {
-      return this.categoriesService.remove(+id);
+    remove(@Param('id', ParseIntPipe) id: number) {
+      return this.categoriesService.remove(id);
     }
   }
   
