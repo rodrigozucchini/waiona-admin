@@ -1,11 +1,11 @@
-import { StockMovementType } from '../../common/enums/stock-movement-type.enum';
+import { StockLossReason } from '../../common/enums/stock-loss-reason.enum';
 
-export class StockMovementResponseAdminDto {
+export class StockLossResponseAdminDto {
   id: number;
   productId: number;
   quantity: number;
-  type: StockMovementType;
-  note?: string;
+  reason: StockLossReason;
+  description?: string;
 
   createdAt: Date;
 }
