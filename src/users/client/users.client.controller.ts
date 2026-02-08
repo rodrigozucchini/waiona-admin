@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Put, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Put, Param, ParseIntPipe } from '@nestjs/common';
 import { UsersClientService } from './users.client.service';
 
 import { UserResponseClientDto } from './dto/user-response-client.dto';
@@ -18,19 +18,25 @@ export class UsersClientController {
 
   // Obtener perfil (temporal: con param userId hasta que tengamos auth)
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<UserResponseClientDto> {
-    return this.userClientService.findMe(Number(id));
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserResponseClientDto> {
+    return this.userClientService.findMe(id);
   }
 
   // Actualizar perfil
   @Put(':id')
-  async update(@Param('id') id: string, @Body() dto: UpdateUserClientDto): Promise<UserResponseClientDto> {
-    return this.userClientService.update(Number(id), dto);
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateUserClientDto,
+  ): Promise<UserResponseClientDto> {
+    return this.userClientService.update(id, dto);
   }
 
   // Cambiar contraseña
   @Put(':id/password')
-  async changePassword(@Param('id') id: string, @Body() dto: ChangePasswordClientDto): Promise<void> {
-    return this.userClientService.changePassword(Number(id), dto);
+  async changePassword(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: ChangePasswordClientDto,
+  ): Promise<void> {
+    return this.userClientService.changePassword(id, dto);
   }
 }
