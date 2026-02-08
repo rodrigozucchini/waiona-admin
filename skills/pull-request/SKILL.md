@@ -1,45 +1,50 @@
 ---
 name: pull-request-standard
 description: >
-  Standard workflow and conventions for branches, commits, and PRs in this repo.
-  Trigger: Use when preparing changes for review, making commits, or drafting PRs.
-license: Apache-2.0
+  Detailed workflow and conventions for branches, commits, and PRs in this repo.
+  Trigger: Use when preparing changes for review, creating branches, committing, or drafting PRs.
+license: UNLICENSED
 metadata:
-  author: prowler-cloud
+  author: @rodrigozucchini
   version: "1.0"
 ---
 
 ## When to Use
 
 Use this skill when:
-- Creating branches or planning PRs.
-- Writing commit messages.
+- Creating branches for new work.
+- Writing commit messages and organizing commit history.
 - Drafting PR titles and descriptions.
 
 ---
 
 ## Critical Patterns
 
-- Create a branch before making changes.
-- Stage changes with `git add` before committing.
-- Follow commit convention: **imperative mood**, concise, and scoped if needed.
-- PRs must include a clear summary and testing section.
+- Always create a **feature branch** before changing files.
+- Stage files explicitly with `git add` before committing.
+- Follow the commit naming convention and branch naming convention.
+- Every PR must include **Summary** + **Testing** sections.
 
-### Pattern 1: Commit message
+### Pattern 1: Branch naming convention
 
-```text
-Add admin users service and controller
+```
+<type>/<short-topic>
+
+Examples:
+feature/admin-users
+fix/stock-dto-validation
+chore/update-skills
 ```
 
-### Pattern 2: PR body
+### Pattern 2: Commit message convention
 
-```markdown
-## Summary
-- add admin users endpoints
-- wire admin module into users module
+```
+<Verb in imperative> <short scope>
 
-## Testing
-- not run (not requested)
+Examples:
+Add admin users endpoints
+Fix stock DTO validation
+Update skills documentation
 ```
 
 ---
@@ -47,10 +52,10 @@ Add admin users service and controller
 ## Decision Tree
 
 ```
-Did you create a new branch? → Proceed
+Is there a new feature or fix? → Create a branch first
 Did you stage files? → Commit with convention
 Ready to share? → Open PR with summary + testing
-Otherwise → Keep working on changes
+Otherwise → Keep working
 ```
 
 ---
@@ -65,11 +70,12 @@ git add src/users
 git commit -m "Add admin users endpoints"
 ```
 
-### Example 2: PR creation (summary/testing)
+### Example 2: PR body
 
 ```markdown
 ## Summary
 - add admin users endpoints
+- wire admin module into users module
 
 ## Testing
 - not run (not requested)
