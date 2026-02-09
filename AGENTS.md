@@ -59,7 +59,6 @@ src/
 ├── permissions/
 ├── pricing/
 ├── products/
-├── profiles/
 ├── roles/
 ├── stock/
 └── users/

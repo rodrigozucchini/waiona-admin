@@ -15,7 +15,6 @@ import { UsersModule } from './users/users.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { RolesModule } from './roles/roles.module';
 import { AuthModule } from './auth/auth.module';
-import { ProfilesModule } from './profiles/profiles.module';
 import { Env } from './env.model';
 import { CombosModule } from './products/combos/combos.module';
 import { CombosAdminModule } from './products/combos/admin/combos.admin.module';
@@ -60,7 +59,6 @@ import { StockAdminModule } from './stock/admin/stock.admin.module';
     PermissionsModule,
     RolesModule,
     AuthModule,
-    ProfilesModule,
     CategoriesModule,
     StockAdminModule,
   ],
