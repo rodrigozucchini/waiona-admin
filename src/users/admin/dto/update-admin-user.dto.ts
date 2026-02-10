@@ -32,6 +32,11 @@ export class UpdateUserAdminDto {
   @MaxLength(200)
   address?: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  avatarUrl?: string;
+
   // ===== USER =====
 
   @IsOptional()

@@ -45,6 +45,11 @@ export class UpdateUserClientDto extends PartialType(CreateUserClientDto) {
   @MaxLength(30)
   documentNumber?: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  avatarUrl?: string;
+
   // ===== USER =====
   @IsOptional()
   @IsString()

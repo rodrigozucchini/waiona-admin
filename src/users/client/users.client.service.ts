@@ -122,6 +122,7 @@ export class UsersClientService {
       type: person?.type,
       documentType: person?.documentType,
       documentNumber: person?.documentNumber,
+      avatarUrl: person?.avatarUrl,
       lastLoginAt: user.lastLoginAt,
       emailVerified: user.emailVerified,
     };

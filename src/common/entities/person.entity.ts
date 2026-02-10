@@ -36,4 +36,7 @@ export class PersonEntity extends BaseEntity {
 
   @Column({ nullable: true, length: 30 })
   documentNumber?: string;
+
+  @Column({ nullable: true, length: 255 })
+  avatarUrl?: string;
 }

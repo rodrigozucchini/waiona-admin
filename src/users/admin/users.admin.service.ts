@@ -54,6 +54,7 @@ export class UsersAdminService {
         type: dto.type,
         documentType: dto.documentType,
         documentNumber: dto.documentNumber,
+        avatarUrl: dto.avatarUrl,
       },
     });
 
@@ -96,6 +97,10 @@ export class UsersAdminService {
 
     if (dto.address !== undefined) {
       user.person.address = dto.address;
+    }
+
+    if (dto.avatarUrl !== undefined) {
+      user.person.avatarUrl = dto.avatarUrl;
     }
 
     if (dto.password) {
