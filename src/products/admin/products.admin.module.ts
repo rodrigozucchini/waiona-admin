@@ -6,8 +6,8 @@ import { ProductsAdminController } from './products.admin.controller';
 import { ProductsModule } from '../products.module';
 import { ImagesAdminModule } from '../images/admin/images.admin.module';
 import { CombosAdminModule } from '../combos/admin/combos.admin.module';
-import { TaxesModule } from '../../../pricing/taxes/admin/taxes.admin.module';
-import { MarginsModule } from '../../../pricing/margins/margins.module';
+import { TaxesModule } from '../../pricing/taxes/admin/taxes.admin.module';
+import { MarginsModule } from '../../pricing/margins/margins.module';
 
 @Module({
   imports: [

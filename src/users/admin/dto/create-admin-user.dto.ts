@@ -51,6 +51,11 @@ export class CreateUserAdminDto {
   @MaxLength(30)
   documentNumber?: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  avatarUrl?: string;
+
   // ========= USER =========
 
   @IsString()

@@ -12,6 +12,7 @@ export class UserResponseClientDto {
   type: PersonType;
   documentType?: DocumentType;
   documentNumber?: string;
+  avatarUrl?: string;
   lastLoginAt?: Date;
   emailVerified: boolean;
 }
