@@ -7,12 +7,15 @@ import {
   Body,
   Put,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 
 import { ProductsAdminService } from '../admin/products.admin.service';
 import { CreateProductAdminDto } from './dto/create-product.admin.dto';
 import { UpdateProductAdminDto } from './dto/update-product.admin.dto';
+import { AuthGuard } from '@nestjs/passport';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('admin/products')
 export class ProductsAdminController {
   constructor(private readonly productsService: ProductsAdminService) {}

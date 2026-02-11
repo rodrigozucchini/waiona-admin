@@ -1,12 +1,15 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-
+import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../../users/users.service';
 import { UserEntity } from '../../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
   /**
    * Validates user by email and password (e.g. for Passport). Returns user without
    * password or null. Role / route separation can be added later.
@@ -21,5 +24,10 @@ export class AuthService {
       throw new UnauthorizedException('Unauthorized');
     }
     return user;
+  }
+
+  generateToken(user: UserEntity) {
+    const payload = { sub: user.id };
+    return this.jwtService.sign(payload);
   }
 }
