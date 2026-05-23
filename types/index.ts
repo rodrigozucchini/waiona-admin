@@ -82,12 +82,10 @@ export interface User {
 // ─── Categories ───────────────────────────────────────────────────────────────
 
 export interface Category {
-  id: string
+  id: number
   name: string
-  slug: string
   description: string | null
-  parentId: string | null
-  parent?: Category
+  parentId: number | null
   children?: Category[]
   isActive: boolean
   createdAt: string
@@ -97,38 +95,37 @@ export interface Category {
 export interface CreateCategoryDto {
   name: string
   description?: string
-  parentId?: string
+  parentId?: number
 }
 
 export interface UpdateCategoryDto {
   name?: string
   description?: string
-  parentId?: string
+  parentId?: number
   isActive?: boolean
 }
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 
 export interface ProductImage {
-  id: string
-  productId: string
-  imageUrl: string
+  id: number
+  productId: number
+  url: string
   altText: string
   position: number
   createdAt: string
 }
 
 export interface Product {
-  id: string
+  id: number
   sku: string
   name: string
   description: string | null
   isActive: boolean
   measurementUnit: ProductMeasurementUnit
-  measurementValue: number
-  categoryId: string
-  category?: Category
-  images?: ProductImage[]
+  measurementValue: number | null
+  categoryId: number
+  categoryName: string
   createdAt: string
   updatedAt: string
   deletedAt: string | null
@@ -138,15 +135,15 @@ export interface CreateProductDto {
   sku: string
   name: string
   description?: string
-  categoryId: string
+  categoryId: number
   measurementUnit: ProductMeasurementUnit
-  measurementValue: number
+  measurementValue?: number
 }
 
 export interface UpdateProductDto {
   name?: string
   description?: string
-  categoryId?: string
+  categoryId?: number
   measurementUnit?: ProductMeasurementUnit
   measurementValue?: number
   isActive?: boolean
@@ -155,27 +152,27 @@ export interface UpdateProductDto {
 // ─── Combos ───────────────────────────────────────────────────────────────────
 
 export interface ComboImage {
-  id: string
-  comboId: string
-  imageUrl: string
+  id: number
+  comboId: number
+  url: string
   altText: string
   position: number
   createdAt: string
 }
 
 export interface ComboItem {
-  id: string
-  comboId: string
-  productId: string
-  product?: Product
+  productId: number
+  productName: string
   quantity: number
 }
 
 export interface Combo {
-  id: string
+  id: number
   name: string
   description: string | null
   isActive: boolean
+  categoryId: number | null
+  categoryName: string | null
   items?: ComboItem[]
   images?: ComboImage[]
   createdAt: string
@@ -186,19 +183,21 @@ export interface Combo {
 export interface CreateComboDto {
   name: string
   description?: string
-  items: { productId: string; quantity: number }[]
+  categoryId?: number
+  items: { productId: number; quantity: number }[]
 }
 
 export interface UpdateComboDto {
   name?: string
   description?: string
+  categoryId?: number
   isActive?: boolean
 }
 
 // ─── Stock ────────────────────────────────────────────────────────────────────
 
 export interface StockLocation {
-  id: string
+  id: number
   name: string
   type: StockLocationType
   address: string | null
@@ -208,10 +207,10 @@ export interface StockLocation {
 }
 
 export interface StockItem {
-  id: string
-  productId: string
+  id: number
+  productId: number
   product?: Product
-  locationId: string
+  locationId: number
   location?: StockLocation
   quantity: number
   reserved: number
@@ -222,8 +221,8 @@ export interface StockItem {
 }
 
 export interface StockMovement {
-  id: string
-  stockItemId: string
+  id: number
+  stockItemId: number
   stockItem?: StockItem
   flowType: StockFlowType
   operationType: StockOperationType
@@ -233,8 +232,8 @@ export interface StockMovement {
 }
 
 export interface StockWriteOff {
-  id: string
-  stockItemId: string
+  id: number
+  stockItemId: number
   stockItem?: StockItem
   quantity: number
   reason: StockWriteoffReason
@@ -245,7 +244,7 @@ export interface StockWriteOff {
 // ─── Pricing ──────────────────────────────────────────────────────────────────
 
 export interface Margin {
-  id: string
+  id: number
   name: string
   percentage: number
   createdAt: string
@@ -253,13 +252,13 @@ export interface Margin {
 }
 
 export interface ProductPricing {
-  id: string
-  productId: string
+  id: number
+  productId: number
   product?: Product
   currencyCode: CurrencyCode
   baseCost: number
   basePrice: number
-  marginId: string | null
+  marginId: number | null
   margin?: Margin
   finalPrice: number
   createdAt: string
@@ -267,13 +266,13 @@ export interface ProductPricing {
 }
 
 export interface ComboPricing {
-  id: string
-  comboId: string
+  id: number
+  comboId: number
   combo?: Combo
   currencyCode: CurrencyCode
   baseCost: number
   basePrice: number
-  marginId: string | null
+  marginId: number | null
   margin?: Margin
   finalPrice: number
   createdAt: string
@@ -283,7 +282,7 @@ export interface ComboPricing {
 // ─── Taxes ────────────────────────────────────────────────────────────────────
 
 export interface TaxType {
-  id: string
+  id: number
   code: string
   name: string
   description: string | null
@@ -292,8 +291,8 @@ export interface TaxType {
 }
 
 export interface Tax {
-  id: string
-  taxTypeId: string
+  id: number
+  taxTypeId: number
   taxType?: TaxType
   rate: number
   description: string | null
@@ -302,9 +301,9 @@ export interface Tax {
 }
 
 export interface ProductTax {
-  id: string
-  productId: string
-  taxId: string
+  id: number
+  productId: number
+  taxId: number
   tax?: Tax
   appliedRate: number
   createdAt: string
@@ -313,15 +312,15 @@ export interface ProductTax {
 // ─── Promotions ───────────────────────────────────────────────────────────────
 
 export interface CouponUsage {
-  id: string
-  couponId: string
-  orderId: string
-  userId: string
+  id: number
+  couponId: number
+  orderId: number
+  userId: number
   usedAt: string
 }
 
 export interface Coupon {
-  id: string
+  id: number
   code: string
   discountType: CouponDiscountType
   discountValue: number
@@ -330,15 +329,15 @@ export interface Coupon {
   maxUses: number | null
   usageCount: number
   targets?: {
-    products: { productId: string; product?: Product }[]
-    combos: { comboId: string; combo?: Combo }[]
+    products: { productId: number; product?: Product }[]
+    combos: { comboId: number; combo?: Combo }[]
   }
   createdAt: string
   updatedAt: string
 }
 
 export interface Discount {
-  id: string
+  id: number
   name: string
   discountType: CouponDiscountType
   discountValue: number
@@ -346,8 +345,8 @@ export interface Discount {
   validTo: string | null
   status: DiscountStatus
   targets?: {
-    products: { productId: string; product?: Product }[]
-    combos: { comboId: string; combo?: Combo }[]
+    products: { productId: number; product?: Product }[]
+    combos: { comboId: number; combo?: Combo }[]
   }
   createdAt: string
   updatedAt: string
@@ -356,10 +355,10 @@ export interface Discount {
 // ─── Orders ───────────────────────────────────────────────────────────────────
 
 export interface OrderItem {
-  id: string
-  orderId: string
-  productId: string | null
-  comboId: string | null
+  id: number
+  orderId: number
+  productId: number | null
+  comboId: number | null
   product?: Product
   combo?: Combo
   quantity: number
@@ -368,8 +367,8 @@ export interface OrderItem {
 }
 
 export interface Payment {
-  id: string
-  orderId: string
+  id: number
+  orderId: number
   provider: PaymentProvider
   status: PaymentStatus
   amount: number
@@ -380,8 +379,8 @@ export interface Payment {
 }
 
 export interface Order {
-  id: string
-  userId: string
+  id: number
+  userId: number
   user?: User
   status: OrderStatus
   deliveryType: DeliveryType
@@ -404,14 +403,14 @@ export interface OrderAnalytics {
 }
 
 export interface TopProductItem {
-  productId: string
+  productId: number
   productName: string
   totalSold: number
   totalRevenue: number
 }
 
 export interface CriticalStockItem {
-  stockItemId: string
+  stockItemId: number
   productName: string
   locationName: string
   available: number
