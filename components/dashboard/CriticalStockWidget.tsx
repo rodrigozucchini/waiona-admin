@@ -33,15 +33,15 @@ export async function CriticalStockWidget() {
       </h2>
       <ul className="space-y-2">
         {data.map((item) => (
-          <li key={item.stockItemId} className="flex items-center justify-between">
+          <li key={item.id} className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">{item.productName}</p>
               <p className="text-xs text-muted-foreground">{item.locationName}</p>
             </div>
             <div className="text-right">
-              <p className="text-sm font-bold text-red-700">{item.available} u.</p>
+              <p className="text-sm font-bold text-red-700">{item.quantityAvailable} u.</p>
               <Link
-                href={`/stock/items/${item.stockItemId}`}
+                href={`/stock/items/${item.id}`}
                 className="text-xs underline text-red-700"
               >
                 Ver stock
