@@ -17,7 +17,7 @@ export type OrderStatus = 'pending' | 'confirmed' | 'dispatched' | 'delivered' |
 
 export type PaymentStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
 
-export type PaymentProvider = 'mercadopago'
+export type PaymentProvider = 'mercadopago' | 'stripe'
 
 export type DeliveryType = 'pickup' | 'delivery'
 
