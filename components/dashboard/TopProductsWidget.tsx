@@ -1,7 +1,6 @@
 import { unstable_cache } from 'next/cache'
 import { cookies } from 'next/headers'
 import { api } from '@/lib/api'
-import { formatCurrency } from '@/lib/utils'
 import type { TopProductItem } from '@/types'
 
 const getTopProducts = unstable_cache(
@@ -32,7 +31,6 @@ export async function TopProductsWidget() {
           <tr className="text-muted-foreground">
             <th className="text-left font-normal">Producto</th>
             <th className="text-right font-normal">Vendidos</th>
-            <th className="text-right font-normal">Ingresos</th>
           </tr>
         </thead>
         <tbody>
@@ -40,10 +38,9 @@ export async function TopProductsWidget() {
             <tr key={item.productId} className="border-t">
               <td className="py-1.5">
                 <span className="mr-2 text-muted-foreground">{i + 1}.</span>
-                {item.productName}
+                {item.name}
               </td>
               <td className="py-1.5 text-right">{item.totalSold}</td>
-              <td className="py-1.5 text-right">{formatCurrency(item.totalRevenue)}</td>
             </tr>
           ))}
         </tbody>

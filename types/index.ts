@@ -15,34 +15,31 @@ export type RoleType = 'super_admin' | 'admin' | 'client'
 
 export type OrderStatus = 'pending' | 'confirmed' | 'dispatched' | 'delivered' | 'cancelled'
 
-export type PaymentStatus = 'pending' | 'approved' | 'failed' | 'cancelled'
+export type PaymentStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
 
 export type PaymentProvider = 'mercadopago'
 
 export type DeliveryType = 'pickup' | 'delivery'
 
-export type StockFlowType = 'inbound' | 'outbound'
+export type StockLocationType = 'WAREHOUSE' | 'STORE' | 'VIRTUAL'
 
-export type StockOperationType = 'add' | 'remove'
+export type StockOperationType = 'ENTRY' | 'EXIT' | 'ADJUSTMENT' | 'DAMAGE' | 'RETURN'
 
-export type StockWriteoffReason = 'damage' | 'expired' | 'loss'
+export type StockFlowType = 'INBOUND' | 'OUTBOUND'
 
-export type StockLocationType = 'warehouse' | 'store' | 'other'
+export type StockReferenceType = 'MANUAL' | 'ORDER'
+
+export type StockWriteoffReason = 'DAMAGE' | 'EXPIRY' | 'LOSS' | 'OTHER'
 
 export type CurrencyCode = 'ARS' | 'USD'
 
 export type ProductMeasurementUnit = 'unit' | 'kg' | 'liter' | 'gram' | 'ml'
 
-export type CouponDiscountType = 'PERCENTAGE' | 'FIXED'
+export type DiscountStatus = 'active' | 'scheduled' | 'expired'
 
-export type DiscountStatus = 'active' | 'inactive'
+export type CouponStatus = 'active' | 'scheduled' | 'expired' | 'exhausted'
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
-
-export interface AuthTokens {
-  accessToken: string
-  refreshToken: string
-}
 
 export interface JWTPayload {
   sub: number
@@ -58,25 +55,17 @@ export interface Profile {
   name: string
   lastName: string
   avatar: string | null
-  createdAt: string
-  updatedAt: string
-  deletedAt: string | null
-}
-
-export interface UserRole {
-  id: number
-  type: RoleType
 }
 
 export interface User {
   id: number
   email: string
   isActive: boolean
+  // In list responses, role comes as a plain string
+  role: string
   profile: Profile | null
-  role: UserRole | null
   createdAt: string
   updatedAt: string
-  deletedAt: string | null
 }
 
 // ─── Categories ───────────────────────────────────────────────────────────────
@@ -111,9 +100,10 @@ export interface ProductImage {
   id: number
   productId: number
   url: string
-  altText: string
+  altText?: string
   position: number
   createdAt: string
+  updatedAt: string
 }
 
 export interface Product {
@@ -155,9 +145,10 @@ export interface ComboImage {
   id: number
   comboId: number
   url: string
-  altText: string
+  altText?: string
   position: number
   createdAt: string
+  updatedAt: string
 }
 
 export interface ComboItem {
@@ -174,7 +165,6 @@ export interface Combo {
   categoryId: number | null
   categoryName: string | null
   items?: ComboItem[]
-  images?: ComboImage[]
   createdAt: string
   updatedAt: string
   deletedAt: string | null
@@ -201,21 +191,6 @@ export interface StockLocation {
   name: string
   type: StockLocationType
   address: string | null
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-}
-
-export interface StockItem {
-  id: number
-  productId: number
-  product?: Product
-  locationId: number
-  location?: StockLocation
-  quantity: number
-  reserved: number
-  criticalThreshold: number
-  warningThreshold: number
   createdAt: string
   updatedAt: string
 }
@@ -223,22 +198,41 @@ export interface StockItem {
 export interface StockMovement {
   id: number
   stockItemId: number
-  stockItem?: StockItem
-  flowType: StockFlowType
   operationType: StockOperationType
+  stockFlow: StockFlowType
   quantity: number
-  notes: string | null
+  referenceType: StockReferenceType
+  referenceId: number | null
   createdAt: string
+}
+
+export interface StockItem {
+  id: number
+  productId: number
+  locationId: number
+  locationName: string
+  quantityCurrent: number
+  quantityReserved: number
+  quantityAvailable: number
+  stockMin: number
+  stockCritical: number
+  stockMax: number
+  movements?: StockMovement[]
+  createdAt: string
+  updatedAt: string
 }
 
 export interface StockWriteOff {
   id: number
   stockItemId: number
-  stockItem?: StockItem
+  movementId: number
   quantity: number
   reason: StockWriteoffReason
-  notes: string | null
+  description: string | null
+  attachments: string[]
+  reportedBy: number
   createdAt: string
+  updatedAt: string
 }
 
 // ─── Pricing ──────────────────────────────────────────────────────────────────
@@ -246,7 +240,8 @@ export interface StockWriteOff {
 export interface Margin {
   id: number
   name: string
-  percentage: number
+  value: number
+  isPercentage: boolean
   createdAt: string
   updatedAt: string
 }
@@ -254,13 +249,9 @@ export interface Margin {
 export interface ProductPricing {
   id: number
   productId: number
-  product?: Product
-  currencyCode: CurrencyCode
-  baseCost: number
-  basePrice: number
+  currency: CurrencyCode
+  unitPrice: number
   marginId: number | null
-  margin?: Margin
-  finalPrice: number
   createdAt: string
   updatedAt: string
 }
@@ -268,15 +259,24 @@ export interface ProductPricing {
 export interface ComboPricing {
   id: number
   comboId: number
-  combo?: Combo
-  currencyCode: CurrencyCode
-  baseCost: number
-  basePrice: number
+  currency: CurrencyCode
+  unitPrice: number
   marginId: number | null
-  margin?: Margin
-  finalPrice: number
   createdAt: string
   updatedAt: string
+}
+
+export interface PriceBreakdown {
+  unitPrice: number
+  discount: number
+  priceAfterDiscount: number
+  margin: number
+  priceAfterMargin: number
+  taxes: number
+  finalPrice: number
+  fullPrice: number
+  coupon: number
+  orderTotal: number
 }
 
 // ─── Taxes ────────────────────────────────────────────────────────────────────
@@ -285,7 +285,6 @@ export interface TaxType {
   id: number
   code: string
   name: string
-  description: string | null
   createdAt: string
   updatedAt: string
 }
@@ -294,8 +293,10 @@ export interface Tax {
   id: number
   taxTypeId: number
   taxType?: TaxType
-  rate: number
-  description: string | null
+  value: number
+  isPercentage: boolean
+  currency: CurrencyCode
+  isGlobal: boolean
   createdAt: string
   updatedAt: string
 }
@@ -304,34 +305,58 @@ export interface ProductTax {
   id: number
   productId: number
   taxId: number
-  tax?: Tax
-  appliedRate: number
   createdAt: string
+  updatedAt: string
+}
+
+export interface ComboTax {
+  id: number
+  comboId: number
+  taxId: number
+  createdAt: string
+  updatedAt: string
 }
 
 // ─── Promotions ───────────────────────────────────────────────────────────────
+
+export interface Coupon {
+  id: number
+  code: string
+  status: CouponStatus
+  value: number
+  isPercentage: boolean
+  currency: CurrencyCode
+  isGlobal: boolean
+  usageLimit: number | null
+  usageCount: number
+  startsAt: string | null
+  endsAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CouponProductTarget {
+  id: number
+  couponId: number
+  productId: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CouponComboTarget {
+  id: number
+  couponId: number
+  comboId: number
+  createdAt: string
+  updatedAt: string
+}
 
 export interface CouponUsage {
   id: number
   couponId: number
   orderId: number
   userId: number
-  usedAt: string
-}
-
-export interface Coupon {
-  id: number
-  code: string
-  discountType: CouponDiscountType
-  discountValue: number
-  validFrom: string
-  validTo: string | null
-  maxUses: number | null
-  usageCount: number
-  targets?: {
-    products: { productId: number; product?: Product }[]
-    combos: { comboId: number; combo?: Combo }[]
-  }
+  appliedAt: string
   createdAt: string
   updatedAt: string
 }
@@ -339,15 +364,29 @@ export interface Coupon {
 export interface Discount {
   id: number
   name: string
-  discountType: CouponDiscountType
-  discountValue: number
-  validFrom: string
-  validTo: string | null
+  description: string | null
   status: DiscountStatus
-  targets?: {
-    products: { productId: number; product?: Product }[]
-    combos: { comboId: number; combo?: Combo }[]
-  }
+  value: number
+  isPercentage: boolean
+  currency: CurrencyCode
+  startsAt: string | null
+  endsAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface DiscountProductTarget {
+  id: number
+  discountId: number
+  productId: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface DiscountComboTarget {
+  id: number
+  discountId: number
+  comboId: number
   createdAt: string
   updatedAt: string
 }
@@ -356,14 +395,13 @@ export interface Discount {
 
 export interface OrderItem {
   id: number
-  orderId: number
   productId: number | null
+  productName: string | null
   comboId: number | null
-  product?: Product
-  combo?: Combo
+  comboName: string | null
   quantity: number
   unitPrice: number
-  subtotal: number
+  finalPrice: number
 }
 
 export interface Payment {
@@ -371,9 +409,9 @@ export interface Payment {
   orderId: number
   provider: PaymentProvider
   status: PaymentStatus
-  amount: number
-  currencyCode: CurrencyCode
   externalId: string | null
+  checkoutUrl: string | null
+  amount: number
   createdAt: string
   updatedAt: string
 }
@@ -381,13 +419,15 @@ export interface Payment {
 export interface Order {
   id: number
   userId: number
-  user?: User
   status: OrderStatus
   deliveryType: DeliveryType
+  address: string | null
+  notes: string | null
+  subtotal: number
+  couponDiscount: number | null
+  couponCode: string | null
   total: number
-  currencyCode: CurrencyCode
   items?: OrderItem[]
-  payments?: Payment[]
   createdAt: string
   updatedAt: string
 }
@@ -404,15 +444,21 @@ export interface OrderAnalytics {
 
 export interface TopProductItem {
   productId: number
-  productName: string
+  name: string
+  sku: string
   totalSold: number
-  totalRevenue: number
 }
 
 export interface CriticalStockItem {
-  stockItemId: number
+  id: number
+  productId: number
   productName: string
+  sku: string
+  locationId: number
   locationName: string
-  available: number
-  criticalThreshold: number
+  quantityCurrent: number
+  quantityReserved: number
+  quantityAvailable: number
+  stockCritical: number
+  stockMin: number
 }
