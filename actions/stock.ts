@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { api, ApiError } from '@/lib/api'
 
 export type StockActionState =
@@ -63,24 +64,50 @@ export async function deleteStockLocation(id: number): Promise<StockActionState>
   return { status: 'success' }
 }
 
+// ─── Create Stock Item ────────────────────────────────────────────────────────
+
+export async function createStockItem(
+  _prev: StockActionState,
+  formData: FormData,
+): Promise<StockActionState> {
+  const productId = Number(formData.get('productId'))
+  const locationId = Number(formData.get('locationId'))
+  const stockMin = Number(formData.get('stockMin'))
+  const stockCritical = Number(formData.get('stockCritical'))
+  const stockMaxRaw = formData.get('stockMax')
+  const stockMax = stockMaxRaw ? Number(stockMaxRaw) : undefined
+
+  if (!productId) return { status: 'error', message: 'El producto es requerido' }
+  if (!locationId) return { status: 'error', message: 'La ubicación es requerida' }
+  if (stockCritical >= stockMin) return { status: 'error', message: 'El umbral crítico debe ser menor al mínimo' }
+  if (stockMax !== undefined && stockMax <= stockMin) return { status: 'error', message: 'El máximo debe ser mayor al mínimo' }
+
+  try {
+    await api.post('/stock-items', { productId, locationId, stockMin, stockCritical, stockMax })
+  } catch (err) {
+    if (err instanceof ApiError) return { status: 'error', message: err.message }
+    return { status: 'error', message: 'Error al crear el ítem de stock' }
+  }
+
+  revalidatePath('/stock/items')
+  redirect('/stock/items')
+}
+
 // ─── Stock Operations ─────────────────────────────────────────────────────────
 
 export async function addStock(
+  productId: number,
+  locationId: number,
   stockItemId: number,
   _prev: StockActionState,
   formData: FormData,
 ): Promise<StockActionState> {
   const quantity = Number(formData.get('quantity'))
-  const notes = formData.get('notes') as string
 
   if (!quantity || quantity <= 0) return { status: 'error', message: 'La cantidad debe ser mayor a 0' }
 
   try {
-    await api.post('/stock-items/add-stock', {
-      stockItemId,
-      quantity,
-      notes: notes || undefined,
-    })
+    await api.post('/stock-items/add-stock', { productId, locationId, quantity })
   } catch (err) {
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al agregar stock' }
