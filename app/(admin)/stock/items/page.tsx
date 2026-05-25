@@ -21,7 +21,7 @@ export default async function StockItemsPage({
 
   const [itemsResult, productsResult] = await Promise.all([
     api.get<PaginatedResponse<StockItem>>(`/stock-items?page=${page}&limit=20`),
-    api.get<PaginatedResponse<Product>>('/products?limit=200'),
+    api.get<PaginatedResponse<Product>>('/products?limit=100'),
   ])
 
   const productMap = new Map(productsResult.data.map((p) => [p.id, p]))

@@ -4,8 +4,8 @@ import { ComboPricingClient } from './ComboPricingClient'
 
 export default async function ComboPricingPage() {
   const [combosResult, pricingsResult, marginsResult] = await Promise.all([
-    api.get<PaginatedResponse<Combo>>('/combos?limit=200'),
-    api.get<PaginatedResponse<ComboPricing>>('/combo-pricing?limit=200'),
+    api.get<PaginatedResponse<Combo>>('/combos?limit=100'),
+    api.get<PaginatedResponse<ComboPricing>>('/combo-pricing?limit=100'),
     api.get<PaginatedResponse<Margin>>('/margins?limit=100'),
   ])
 

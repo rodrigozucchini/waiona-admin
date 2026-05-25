@@ -7,7 +7,7 @@ import type { PaginatedResponse, Category, Product } from '@/types'
 export default async function NewComboPage() {
   const [categoriesResult, productsResult] = await Promise.all([
     api.get<PaginatedResponse<Category>>('/categories?limit=100'),
-    api.get<PaginatedResponse<Product>>('/products?limit=200&isActive=true'),
+    api.get<PaginatedResponse<Product>>('/products?limit=100'),
   ])
 
   return (

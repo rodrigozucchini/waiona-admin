@@ -31,8 +31,8 @@ export default async function DiscountDetailPage({
   const [productTargets, comboTargets, productsResult, combosResult] = await Promise.all([
     api.get<PaginatedResponse<DiscountProductTarget>>(`/discounts/${id}/targets/products?limit=100`),
     api.get<PaginatedResponse<DiscountComboTarget>>(`/discounts/${id}/targets/combos?limit=100`),
-    api.get<PaginatedResponse<Product>>('/products?limit=200'),
-    api.get<PaginatedResponse<Combo>>('/combos?limit=200'),
+    api.get<PaginatedResponse<Product>>('/products?limit=100'),
+    api.get<PaginatedResponse<Combo>>('/combos?limit=100'),
   ])
 
   const cfg = statusConfig[discount.status]
