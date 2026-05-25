@@ -4,8 +4,8 @@ import { ProductPricingClient } from './ProductPricingClient'
 
 export default async function ProductPricingPage() {
   const [productsResult, pricingsResult, marginsResult] = await Promise.all([
-    api.get<PaginatedResponse<Product>>('/products?limit=200'),
-    api.get<PaginatedResponse<ProductPricing>>('/product-pricing?limit=200'),
+    api.get<PaginatedResponse<Product>>('/products?limit=100'),
+    api.get<PaginatedResponse<ProductPricing>>('/product-pricing?limit=100'),
     api.get<PaginatedResponse<Margin>>('/margins?limit=100'),
   ])
 

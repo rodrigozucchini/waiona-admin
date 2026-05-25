@@ -23,7 +23,7 @@ export default async function EditComboPage({
 
   const [categoriesResult, productsResult, images] = await Promise.all([
     api.get<PaginatedResponse<Category>>('/categories?limit=100'),
-    api.get<PaginatedResponse<Product>>('/products?limit=200'),
+    api.get<PaginatedResponse<Product>>('/products?limit=100'),
     api.get<ComboImage[]>(`/combo-images/combo/${id}`).catch(() => [] as ComboImage[]),
   ])
 
