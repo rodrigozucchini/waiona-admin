@@ -16,7 +16,7 @@ const WRITEOFF_REASONS = [
 export function StockItemClient({ item }: { item: StockItem }) {
   const [operation, setOperation] = useState<Operation>(null)
 
-  const addAction = addStock.bind(null, item.id)
+  const addAction = addStock.bind(null, item.productId, item.locationId, item.id)
   const writeOffAction = writeOff.bind(null, item.id)
   const thresholdsAction = updateThresholds.bind(null, item.id)
 
@@ -64,14 +64,6 @@ export function StockItemClient({ item }: { item: StockItem }) {
                 type="number"
                 min="1"
                 required
-                className="w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="add-notes" className="text-xs text-muted-foreground">Notas (opcional)</label>
-              <input
-                id="add-notes"
-                name="notes"
                 className="w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>

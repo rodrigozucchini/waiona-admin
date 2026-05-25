@@ -31,11 +31,19 @@ export default async function StockItemsPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Stock</h1>
-        <p className="text-sm text-muted-foreground">
-          {total} ítem{total !== 1 ? 's' : ''} en inventario.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Stock</h1>
+          <p className="text-sm text-muted-foreground">
+            {total} ítem{total !== 1 ? 's' : ''} en inventario.
+          </p>
+        </div>
+        <Link
+          href="/stock/items/new"
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          Nuevo ítem
+        </Link>
       </div>
 
       {items.length === 0 ? (
