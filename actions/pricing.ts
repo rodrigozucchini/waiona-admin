@@ -18,12 +18,14 @@ export async function createMargin(
 ): Promise<PricingActionState> {
   const name = (formData.get('name') as string).trim()
   const value = Number(formData.get('value'))
+  const isPercentage = formData.get('isPercentage') === 'true'
 
   if (!name) return { status: 'error', message: 'El nombre es requerido' }
   if (isNaN(value) || value < 0) return { status: 'error', message: 'El valor debe ser mayor o igual a 0' }
+  if (isPercentage && value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
 
   try {
-    await api.post<Margin>('/margins', { name, value, isPercentage: true })
+    await api.post<Margin>('/margins', { name, value, isPercentage })
   } catch (err) {
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al crear el margen' }
@@ -40,12 +42,14 @@ export async function updateMargin(
 ): Promise<PricingActionState> {
   const name = (formData.get('name') as string).trim()
   const value = Number(formData.get('value'))
+  const isPercentage = formData.get('isPercentage') === 'true'
 
   if (!name) return { status: 'error', message: 'El nombre es requerido' }
   if (isNaN(value) || value < 0) return { status: 'error', message: 'Valor inválido' }
+  if (isPercentage && value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
 
   try {
-    await api.patch<Margin>(`/margins/${id}`, { name, value })
+    await api.patch<Margin>(`/margins/${id}`, { name, value, isPercentage })
   } catch (err) {
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al actualizar el margen' }
