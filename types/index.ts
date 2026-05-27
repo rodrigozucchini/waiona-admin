@@ -241,7 +241,6 @@ export interface Margin {
   id: number
   name: string
   value: number
-  isPercentage: boolean
   createdAt: string
   updatedAt: string
 }

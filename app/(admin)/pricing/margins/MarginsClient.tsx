@@ -12,7 +12,6 @@ import {
 export function MarginsClient({ margins }: { margins: Margin[] }) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [createState, createAction, isCreating] = useActionState(createMargin, { status: 'idle' })
-  const [createIsPercentage, setCreateIsPercentage] = useState(true)
 
   return (
     <div className="space-y-6 max-w-xl">
@@ -25,8 +24,7 @@ export function MarginsClient({ margins }: { margins: Margin[] }) {
             <thead className="border-b bg-muted/50">
               <tr>
                 <th scope="col" className="px-4 py-3 text-left font-medium">Nombre</th>
-                <th scope="col" className="px-4 py-3 text-left font-medium">Tipo</th>
-                <th scope="col" className="px-4 py-3 text-left font-medium">Valor</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium">Porcentaje</th>
                 <th scope="col" className="px-4 py-3" />
               </tr>
             </thead>
@@ -54,35 +52,22 @@ export function MarginsClient({ margins }: { margins: Margin[] }) {
             <input
               id="new-name"
               name="name"
+              minLength={3}
+              maxLength={100}
               placeholder="Ej: Margen estándar"
-              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-md border px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-          <div className="space-y-1 w-32">
-            <label htmlFor="new-type" className="text-xs font-medium">Tipo</label>
-            <select
-              id="new-type"
-              name="isPercentage"
-              value={createIsPercentage ? 'true' : 'false'}
-              onChange={(e) => setCreateIsPercentage(e.target.value === 'true')}
-              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="true">Porcentaje</option>
-              <option value="false">Fijo</option>
-            </select>
-          </div>
           <div className="space-y-1 w-28">
-            <label htmlFor="new-value" className="text-xs font-medium">
-              {createIsPercentage ? 'Valor (%)' : 'Valor ($)'}
-            </label>
+            <label htmlFor="new-value" className="text-xs font-medium">Porcentaje (%)</label>
             <input
               id="new-value"
               name="value"
               type="number"
               step="0.01"
-              min="0"
-              max={createIsPercentage ? '100' : undefined}
-              placeholder={createIsPercentage ? '20' : '500'}
+              min="0.01"
+              max="1000"
+              placeholder="20"
               className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -120,7 +105,6 @@ function MarginRow({
   const [updateState, updateAction, isUpdating] = useActionState(updateWithId, { status: 'idle' })
   const [deleteState, setDeleteState] = useState<{ error?: string } | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [editIsPercentage, setEditIsPercentage] = useState(margin.isPercentage)
 
   async function handleDelete() {
     if (!confirm(`¿Eliminar el margen "${margin.name}"?`)) return
@@ -135,33 +119,24 @@ function MarginRow({
   if (isEditing) {
     return (
       <tr>
-        <td colSpan={4} className="px-4 py-3">
+        <td colSpan={3} className="px-4 py-3">
           <form action={updateAction} className="flex gap-3 items-end flex-wrap">
             <div className="flex-1 min-w-32">
               <input
                 name="name"
                 defaultValue={margin.name}
-                className="w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                minLength={3}
+                maxLength={100}
+                className="w-full rounded-md border px-3 py-1.5 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-primary"
               />
-            </div>
-            <div className="w-32">
-              <select
-                name="isPercentage"
-                value={editIsPercentage ? 'true' : 'false'}
-                onChange={(e) => setEditIsPercentage(e.target.value === 'true')}
-                className="w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="true">Porcentaje</option>
-                <option value="false">Fijo</option>
-              </select>
             </div>
             <div className="w-24">
               <input
                 name="value"
                 type="number"
                 step="0.01"
-                min="0"
-                max={editIsPercentage ? '100' : undefined}
+                min="0.01"
+                max="1000"
                 defaultValue={margin.value}
                 className="w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
@@ -193,12 +168,7 @@ function MarginRow({
   return (
     <tr className="hover:bg-muted/30">
       <td className="px-4 py-3 font-medium">{margin.name}</td>
-      <td className="px-4 py-3 text-muted-foreground text-xs">
-        {margin.isPercentage ? 'Porcentaje' : 'Fijo'}
-      </td>
-      <td className="px-4 py-3 text-muted-foreground">
-        {margin.isPercentage ? `${margin.value}%` : `$${margin.value}`}
-      </td>
+      <td className="px-4 py-3 text-muted-foreground">{margin.value}%</td>
       <td className="px-4 py-3">
         <div className="flex justify-end gap-3">
           {deleteState?.error && (
