@@ -48,7 +48,7 @@ export default async function DiscountsPage() {
                   <tr key={discount.id} className="hover:bg-muted/30">
                     <td className="px-4 py-3 font-medium">{discount.name}</td>
                     <td className="px-4 py-3">
-                      {discount.isPercentage ? `${discount.value}%` : `$${discount.value}`}
+                      {discount.value}%
                     </td>
                     <td className="px-4 py-3">
                       <span className={`rounded px-2 py-0.5 text-xs ${cfg.className}`}>

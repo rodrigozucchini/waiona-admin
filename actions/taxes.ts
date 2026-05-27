@@ -56,19 +56,20 @@ export async function createTax(
   formData: FormData
 ): Promise<TaxActionState> {
   const value = Number(formData.get('value'))
-  const currency = formData.get('currency') as string
+  const isPercentage = formData.get('isPercentage') === 'true'
+  const currency = formData.get('currency') as string | null
   const isGlobal = formData.get('isGlobal') === 'true'
 
-  if (isNaN(value) || value <= 0) return { status: 'error', message: 'El valor debe ser mayor a 0' }
-  if (!currency) return { status: 'error', message: 'La moneda es requerida' }
+  if (isNaN(value) || value < 0.01) return { status: 'error', message: 'El valor mínimo es 0.01' }
+  if (isPercentage && value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
+  if (!isPercentage && value > 1_000_000) return { status: 'error', message: 'El monto fijo no puede superar 1.000.000' }
+  if (!isPercentage && !currency) return { status: 'error', message: 'La moneda es requerida para monto fijo' }
+
+  const payload: Record<string, unknown> = { value, isPercentage, isGlobal }
+  if (!isPercentage) payload.currency = currency
 
   try {
-    await api.post<Tax>(`/tax-types/${taxTypeId}/taxes`, {
-      value,
-      isPercentage: true,
-      currency,
-      isGlobal,
-    })
+    await api.post<Tax>(`/tax-types/${taxTypeId}/taxes`, payload)
   } catch (err) {
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al crear el impuesto' }
@@ -113,5 +114,17 @@ export async function removeTaxFromProduct(productId: number, assignmentId: numb
   }
 
   revalidatePath(`/taxes`)
+  return { status: 'success' }
+}
+
+export async function assignTaxToCombo(comboId: number, taxId: number): Promise<TaxActionState> {
+  try {
+    await api.post(`/combos/${comboId}/taxes`, { taxId })
+  } catch (err) {
+    if (err instanceof ApiError) return { status: 'error', message: err.message }
+    return { status: 'error', message: 'Error al asignar el impuesto al combo' }
+  }
+
+  revalidatePath('/taxes')
   return { status: 'success' }
 }

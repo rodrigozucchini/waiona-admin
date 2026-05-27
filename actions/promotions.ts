@@ -113,22 +113,20 @@ export async function createDiscount(
   const name = (formData.get('name') as string).trim()
   const description = formData.get('description') as string
   const value = Number(formData.get('value'))
-  const isPercentage = formData.get('isPercentage') === 'true'
   const startsAtRaw = formData.get('startsAt') as string
   const endsAtRaw = formData.get('endsAt') as string
 
   if (!name) return { status: 'error', message: 'El nombre es requerido' }
   if (!value || value <= 0) return { status: 'error', message: 'El valor debe ser mayor a 0' }
-  if (isPercentage && value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
+  if (value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
 
   try {
     const discount = await api.post<{ id: number }>('/discounts', {
       name,
       description: description || undefined,
       value,
-      isPercentage,
-      startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : null,
-      endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : null,
+      startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : undefined,
+      endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : undefined,
     })
     revalidatePath('/promotions/discounts')
     redirect(`/promotions/discounts/${discount.id}`)
@@ -146,18 +144,20 @@ export async function updateDiscount(
   const name = (formData.get('name') as string).trim()
   const description = formData.get('description') as string
   const value = Number(formData.get('value'))
-  const isPercentage = formData.get('isPercentage') === 'true'
   const startsAtRaw = formData.get('startsAt') as string
   const endsAtRaw = formData.get('endsAt') as string
+
+  if (!name) return { status: 'error', message: 'El nombre es requerido' }
+  if (!value || value <= 0) return { status: 'error', message: 'El valor debe ser mayor a 0' }
+  if (value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
 
   try {
     await api.patch(`/discounts/${id}`, {
       name,
       description: description || undefined,
       value,
-      isPercentage,
-      startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : null,
-      endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : null,
+      startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : undefined,
+      endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : undefined,
     })
   } catch (err) {
     if (err instanceof ApiError) return { status: 'error', message: err.message }

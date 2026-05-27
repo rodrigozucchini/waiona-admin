@@ -366,8 +366,6 @@ export interface Discount {
   description: string | null
   status: DiscountStatus
   value: number
-  isPercentage: boolean
-  currency: CurrencyCode
   startsAt: string | null
   endsAt: string | null
   createdAt: string

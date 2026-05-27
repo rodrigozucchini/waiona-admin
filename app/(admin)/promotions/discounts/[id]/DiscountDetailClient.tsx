@@ -79,31 +79,21 @@ export function DiscountDetailClient({
                 className="w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label htmlFor="value" className="text-xs font-medium">Valor</label>
+            <div className="space-y-1">
+              <label htmlFor="value" className="text-xs font-medium">Porcentaje (0.01 – 100)</label>
+              <div className="relative">
                 <input
                   id="value"
                   name="value"
                   type="number"
                   step="0.01"
                   min="0.01"
+                  max="100"
                   defaultValue={discount.value}
                   required
-                  className="w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full rounded-md border px-3 py-1.5 pr-7 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
-              </div>
-              <div className="space-y-1">
-                <label htmlFor="isPercentage" className="text-xs font-medium">Tipo</label>
-                <select
-                  id="isPercentage"
-                  name="isPercentage"
-                  defaultValue={String(discount.isPercentage)}
-                  className="w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="true">%</option>
-                  <option value="false">$</option>
-                </select>
+                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">

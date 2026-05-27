@@ -32,7 +32,8 @@ export function ProductPricingClient({ products, pricings, margins }: Props) {
   function getMarginLabel(marginId: number | null) {
     if (!marginId) return '—'
     const m = margins.find((m) => m.id === marginId)
-    return m ? `${m.name} (${m.value}%)` : '—'
+    if (!m) return '—'
+    return m.isPercentage ? `${m.name} (${m.value}%)` : `${m.name} ($${m.value})`
   }
 
   return (
@@ -99,7 +100,7 @@ export function ProductPricingClient({ products, pricings, margins }: Props) {
               >
                 <option value="">Sin margen</option>
                 {margins.map((m) => (
-                  <option key={m.id} value={m.id}>{m.name} ({m.value}%)</option>
+                  <option key={m.id} value={m.id}>{m.name} ({m.isPercentage ? `${m.value}%` : `$${m.value}`})</option>
                 ))}
               </select>
             </div>
@@ -202,7 +203,7 @@ function PricingRow({
             >
               <option value="">Sin margen</option>
               {margins.map((m) => (
-                <option key={m.id} value={m.id}>{m.name} ({m.value}%)</option>
+                <option key={m.id} value={m.id}>{m.name} ({m.isPercentage ? `${m.value}%` : `$${m.value}`})</option>
               ))}
             </select>
             <button type="submit" disabled={isUpdating} className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50">
