@@ -1,7 +1,7 @@
 import { api, ApiError } from '@/lib/api'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import type { PaginatedResponse, TaxType, Tax, Product, Combo } from '@/types'
+import type { PaginatedResponse, TaxType, Tax, Product } from '@/types'
 import { TaxRatesClient } from './TaxRatesClient'
 
 export default async function TaxTypePage({
@@ -19,13 +19,11 @@ export default async function TaxTypePage({
     throw err
   }
 
-  const [taxesRaw, productsResult, combosResult] = await Promise.all([
+  const [taxesRaw, productsResult] = await Promise.all([
     api.get<Tax[] | PaginatedResponse<Tax>>(`/tax-types/${typeId}/taxes?limit=100`),
     api.get<PaginatedResponse<Product>>('/products?limit=100'),
-    api.get<PaginatedResponse<Combo>>('/combos?limit=100'),
   ])
 
-  // API may return Tax[] directly or wrapped in PaginatedResponse
   const taxes: Tax[] = Array.isArray(taxesRaw) ? taxesRaw : (taxesRaw.data ?? [])
 
   return (
@@ -44,7 +42,6 @@ export default async function TaxTypePage({
         taxTypeId={taxType.id}
         taxes={taxes}
         products={productsResult.data}
-        combos={combosResult.data}
       />
     </div>
   )

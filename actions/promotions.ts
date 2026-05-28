@@ -27,6 +27,7 @@ export async function createCoupon(
   if (!value || value <= 0) return { status: 'error', message: 'El valor debe ser mayor a 0' }
   if (isPercentage && value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
 
+  let couponId: number
   try {
     const coupon = await api.post<{ id: number }>('/coupons', {
       code,
@@ -38,8 +39,7 @@ export async function createCoupon(
       startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : null,
       endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : null,
     })
-    revalidatePath('/promotions/coupons')
-    redirect(`/promotions/coupons/${coupon.id}`)
+    couponId = coupon.id
   } catch (err) {
     if (err instanceof ApiError) {
       if (err.status === 409) return { status: 'error', message: 'El código ya está en uso' }
@@ -47,6 +47,9 @@ export async function createCoupon(
     }
     return { status: 'error', message: 'Error al crear el cupón' }
   }
+
+  revalidatePath('/promotions/coupons')
+  redirect(`/promotions/coupons/${couponId}`)
 }
 
 export async function deleteCoupon(id: number): Promise<PromotionActionState> {
@@ -120,6 +123,7 @@ export async function createDiscount(
   if (!value || value <= 0) return { status: 'error', message: 'El valor debe ser mayor a 0' }
   if (value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
 
+  let discountId: number
   try {
     const discount = await api.post<{ id: number }>('/discounts', {
       name,
@@ -128,12 +132,14 @@ export async function createDiscount(
       startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : undefined,
       endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : undefined,
     })
-    revalidatePath('/promotions/discounts')
-    redirect(`/promotions/discounts/${discount.id}`)
+    discountId = discount.id
   } catch (err) {
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al crear el descuento' }
   }
+
+  revalidatePath('/promotions/discounts')
+  redirect(`/promotions/discounts/${discountId}`)
 }
 
 export async function updateDiscount(

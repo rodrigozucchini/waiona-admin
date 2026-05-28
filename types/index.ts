@@ -293,8 +293,6 @@ export interface Tax {
   taxTypeId: number
   taxType?: TaxType
   value: number
-  isPercentage: boolean
-  currency: CurrencyCode
   isGlobal: boolean
   createdAt: string
   updatedAt: string
@@ -303,14 +301,6 @@ export interface Tax {
 export interface ProductTax {
   id: number
   productId: number
-  taxId: number
-  createdAt: string
-  updatedAt: string
-}
-
-export interface ComboTax {
-  id: number
-  comboId: number
   taxId: number
   createdAt: string
   updatedAt: string
