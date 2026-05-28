@@ -28,12 +28,19 @@ export default async function DiscountDetailPage({
     throw err
   }
 
-  const [productTargets, comboTargets, productsResult, combosResult] = await Promise.all([
-    api.get<PaginatedResponse<DiscountProductTarget>>(`/discounts/${id}/targets/products?limit=100`),
-    api.get<PaginatedResponse<DiscountComboTarget>>(`/discounts/${id}/targets/combos?limit=100`),
+  const [productTargetsRaw, comboTargetsRaw, productsResult, combosResult] = await Promise.all([
+    api.get<unknown>(`/discounts/${id}/targets/products?limit=100`),
+    api.get<unknown>(`/discounts/${id}/targets/combos?limit=100`),
     api.get<PaginatedResponse<Product>>('/products?limit=100'),
     api.get<PaginatedResponse<Combo>>('/combos?limit=100'),
   ])
+
+  const productTargets: DiscountProductTarget[] = Array.isArray(productTargetsRaw)
+    ? productTargetsRaw
+    : ((productTargetsRaw as PaginatedResponse<DiscountProductTarget>).data ?? [])
+  const comboTargets: DiscountComboTarget[] = Array.isArray(comboTargetsRaw)
+    ? comboTargetsRaw
+    : ((comboTargetsRaw as PaginatedResponse<DiscountComboTarget>).data ?? [])
 
   const cfg = statusConfig[discount.status]
 
@@ -56,8 +63,8 @@ export default async function DiscountDetailPage({
 
       <DiscountDetailClient
         discount={discount}
-        productTargets={productTargets.data}
-        comboTargets={comboTargets.data}
+        productTargets={productTargets}
+        comboTargets={comboTargets}
         allProducts={productsResult.data}
         allCombos={combosResult.data}
       />

@@ -1,12 +1,11 @@
 'use client'
 
 import { useActionState, useTransition, useState } from 'react'
-import type { Tax, Product, Combo } from '@/types'
+import type { Tax, Product } from '@/types'
 import {
   createTax,
   deleteTax,
   assignTaxToProduct,
-  assignTaxToCombo,
   type TaxActionState,
 } from '@/actions/taxes'
 
@@ -14,16 +13,14 @@ interface Props {
   taxTypeId: number
   taxes: Tax[]
   products: Product[]
-  combos: Combo[]
 }
 
 const INPUT_CLASS =
   'w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
 
-export function TaxRatesClient({ taxTypeId, taxes, products, combos }: Props) {
+export function TaxRatesClient({ taxTypeId, taxes, products }: Props) {
   const createWithId = createTax.bind(null, taxTypeId)
   const [createState, createAction, isCreating] = useActionState(createWithId, { status: 'idle' })
-  const [isPercentage, setIsPercentage] = useState(true)
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -39,7 +36,6 @@ export function TaxRatesClient({ taxTypeId, taxes, products, combos }: Props) {
               taxTypeId={taxTypeId}
               tax={tax}
               products={products}
-              combos={combos}
             />
           ))}
         </div>
@@ -49,46 +45,20 @@ export function TaxRatesClient({ taxTypeId, taxes, products, combos }: Props) {
         <h3 className="mb-4 font-medium text-sm">Nueva tasa</h3>
         <form action={createAction} className="space-y-4">
           <div className="flex gap-3 items-end flex-wrap">
-            <div className="space-y-1 w-36">
-              <label htmlFor="isPercentage" className="text-xs font-medium">Tipo</label>
-              <select
-                id="isPercentage"
-                name="isPercentage"
-                value={isPercentage ? 'true' : 'false'}
-                onChange={(e) => setIsPercentage(e.target.value === 'true')}
-                className={INPUT_CLASS}
-              >
-                <option value="true">Porcentaje (%)</option>
-                <option value="false">Monto fijo ($)</option>
-              </select>
-            </div>
-
             <div className="space-y-1 w-40">
-              <label htmlFor="value" className="text-xs font-medium">
-                {isPercentage ? 'Valor (0.01 – 100)' : 'Monto (0.01 – 1.000.000)'}
-              </label>
+              <label htmlFor="value" className="text-xs font-medium">Porcentaje (0.01 – 100)</label>
               <input
                 id="value"
                 name="value"
                 type="number"
                 step="0.01"
                 min="0.01"
-                max={isPercentage ? 100 : 1_000_000}
-                placeholder={isPercentage ? '21' : '1000'}
+                max={100}
+                placeholder="21"
                 className={INPUT_CLASS}
                 required
               />
             </div>
-
-            {!isPercentage && (
-              <div className="space-y-1 w-24">
-                <label htmlFor="currency" className="text-xs font-medium">Moneda</label>
-                <select id="currency" name="currency" className={INPUT_CLASS}>
-                  <option value="ARS">ARS</option>
-                  <option value="USD">USD</option>
-                </select>
-              </div>
-            )}
 
             <div className="space-y-1 w-28">
               <label htmlFor="isGlobal" className="text-xs font-medium">Alcance</label>
@@ -108,9 +78,8 @@ export function TaxRatesClient({ taxTypeId, taxes, products, combos }: Props) {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            {isPercentage
-              ? 'Los impuestos globales se aplican automáticamente a todos los productos y combos.'
-              : 'Monto fijo requiere moneda. Los específicos se asignan manualmente a productos o combos.'}
+            Los impuestos globales se aplican automáticamente a todos los productos.
+            Los específicos se asignan manualmente.
           </p>
         </form>
 
@@ -129,19 +98,17 @@ function TaxRateRow({
   taxTypeId,
   tax,
   products,
-  combos,
 }: {
   taxTypeId: number
   tax: Tax
   products: Product[]
-  combos: Combo[]
 }) {
   const [showAssign, setShowAssign] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [assignFeedback, setAssignFeedback] = useState<{ ok: boolean; msg: string } | null>(null)
 
   function handleDelete() {
-    if (!confirm(`¿Eliminar la tasa ${tax.isPercentage ? tax.value + '%' : '$' + tax.value}?`)) return
+    if (!confirm(`¿Eliminar la tasa ${tax.value}%?`)) return
     startTransition(async () => {
       await deleteTax(taxTypeId, tax.id)
     })
@@ -158,27 +125,11 @@ function TaxRateRow({
     })
   }
 
-  async function handleAssignCombo(comboId: number) {
-    startTransition(async () => {
-      const result = await assignTaxToCombo(comboId, tax.id)
-      setAssignFeedback(
-        result.status === 'error'
-          ? { ok: false, msg: result.message }
-          : { ok: true, msg: 'Asignado al combo.' }
-      )
-    })
-  }
-
   return (
     <div className="rounded-lg border">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="font-medium tabular-nums">
-            {tax.isPercentage ? `${tax.value}%` : `$${tax.value}${tax.currency ? ` ${tax.currency}` : ''}`}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {tax.isPercentage ? 'Porcentaje' : 'Monto fijo'}
-          </span>
+          <span className="font-medium tabular-nums">{tax.value}%</span>
           {tax.isGlobal ? (
             <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
               Global
@@ -211,23 +162,19 @@ function TaxRateRow({
 
       {tax.isGlobal && (
         <p className="px-4 pb-3 text-xs text-muted-foreground">
-          Se aplica automáticamente a todos los productos y combos.
+          Se aplica automáticamente a todos los productos. Los combos heredan los impuestos de sus productos.
         </p>
       )}
 
       {!tax.isGlobal && showAssign && (
-        <div className="border-t bg-muted/30 px-4 py-4 space-y-4">
-          <p className="text-xs font-medium">Asignar impuesto a:</p>
-          <AssignPanel
-            label="Producto"
-            items={products.map((p) => ({ id: p.id, label: `${p.sku} · ${p.name}` }))}
+        <div className="border-t bg-muted/30 px-4 py-4 space-y-3">
+          <p className="text-xs font-medium">Asignar a producto</p>
+          <p className="text-xs text-muted-foreground">
+            Los combos heredan los impuestos automáticamente desde sus productos.
+          </p>
+          <ProductAssignPanel
+            products={products}
             onAssign={handleAssignProduct}
-            isPending={isPending}
-          />
-          <AssignPanel
-            label="Combo"
-            items={combos.map((c) => ({ id: c.id, label: c.name }))}
-            onAssign={handleAssignCombo}
             isPending={isPending}
           />
           {assignFeedback && (
@@ -241,40 +188,34 @@ function TaxRateRow({
   )
 }
 
-function AssignPanel({
-  label,
-  items,
+function ProductAssignPanel({
+  products,
   onAssign,
   isPending,
 }: {
-  label: string
-  items: { id: number; label: string }[]
+  products: Product[]
   onAssign: (id: number) => void
   isPending: boolean
 }) {
   const [selectedId, setSelectedId] = useState<number | ''>('')
 
-  if (items.length === 0) {
-    return (
-      <div className="text-xs text-muted-foreground">
-        No hay {label.toLowerCase()}s disponibles.
-      </div>
-    )
+  if (products.length === 0) {
+    return <p className="text-xs text-muted-foreground">No hay productos disponibles.</p>
   }
 
   return (
     <div className="flex gap-2 items-end">
       <div className="space-y-1 flex-1">
-        <label className="text-xs text-muted-foreground">{label}</label>
+        <label className="text-xs text-muted-foreground">Producto</label>
         <select
           value={selectedId}
           onChange={(e) => setSelectedId(e.target.value ? Number(e.target.value) : '')}
           className="w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         >
-          <option value="">Seleccionar {label.toLowerCase()}...</option>
-          {items.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.label}
+          <option value="">Seleccionar producto...</option>
+          {products.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.sku} · {p.name}
             </option>
           ))}
         </select>

@@ -26,7 +26,7 @@ export async function createTaxType(
     await api.post<TaxType>('/tax-types', { code, name })
   } catch (err) {
     if (err instanceof ApiError) {
-      if (err.status === 409) return { status: 'error', message: 'Ya existe un tipo de impuesto con ese código' }
+      if (err.status === 400) return { status: 'error', message: 'Ya existe un tipo de impuesto con ese código' }
       return { status: 'error', message: err.message }
     }
     return { status: 'error', message: 'Error al crear el tipo de impuesto' }
@@ -56,20 +56,13 @@ export async function createTax(
   formData: FormData
 ): Promise<TaxActionState> {
   const value = Number(formData.get('value'))
-  const isPercentage = formData.get('isPercentage') === 'true'
-  const currency = formData.get('currency') as string | null
   const isGlobal = formData.get('isGlobal') === 'true'
 
   if (isNaN(value) || value < 0.01) return { status: 'error', message: 'El valor mínimo es 0.01' }
-  if (isPercentage && value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
-  if (!isPercentage && value > 1_000_000) return { status: 'error', message: 'El monto fijo no puede superar 1.000.000' }
-  if (!isPercentage && !currency) return { status: 'error', message: 'La moneda es requerida para monto fijo' }
-
-  const payload: Record<string, unknown> = { value, isPercentage, isGlobal }
-  if (!isPercentage) payload.currency = currency
+  if (value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
 
   try {
-    await api.post<Tax>(`/tax-types/${taxTypeId}/taxes`, payload)
+    await api.post<Tax>(`/tax-types/${taxTypeId}/taxes`, { value, isGlobal })
   } catch (err) {
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al crear el impuesto' }
@@ -91,17 +84,23 @@ export async function deleteTax(taxTypeId: number, taxId: number): Promise<TaxAc
   return { status: 'success' }
 }
 
-// ─── Product / Combo Tax Assignment ──────────────────────────────────────────
+// ─── Product Tax Assignment ───────────────────────────────────────────────────
 
 export async function assignTaxToProduct(productId: number, taxId: number): Promise<TaxActionState> {
   try {
     await api.post(`/products/${productId}/taxes`, { taxId })
   } catch (err) {
-    if (err instanceof ApiError) return { status: 'error', message: err.message }
+    if (err instanceof ApiError) {
+      const msg = err.message.toLowerCase()
+      if (msg.includes('global')) {
+        return { status: 'error', message: 'Este impuesto es global y ya aplica a todos los productos' }
+      }
+      return { status: 'error', message: err.message }
+    }
     return { status: 'error', message: 'Error al asignar el impuesto' }
   }
 
-  revalidatePath(`/taxes`)
+  revalidatePath('/taxes')
   return { status: 'success' }
 }
 
@@ -111,18 +110,6 @@ export async function removeTaxFromProduct(productId: number, assignmentId: numb
   } catch (err) {
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al quitar el impuesto' }
-  }
-
-  revalidatePath(`/taxes`)
-  return { status: 'success' }
-}
-
-export async function assignTaxToCombo(comboId: number, taxId: number): Promise<TaxActionState> {
-  try {
-    await api.post(`/combos/${comboId}/taxes`, { taxId })
-  } catch (err) {
-    if (err instanceof ApiError) return { status: 'error', message: err.message }
-    return { status: 'error', message: 'Error al asignar el impuesto al combo' }
   }
 
   revalidatePath('/taxes')
