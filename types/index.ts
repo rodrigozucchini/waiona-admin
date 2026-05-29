@@ -23,17 +23,17 @@ export type DeliveryType = 'pickup' | 'delivery'
 
 export type StockLocationType = 'WAREHOUSE' | 'STORE' | 'VIRTUAL'
 
-export type StockOperationType = 'ENTRY' | 'EXIT' | 'ADJUSTMENT' | 'DAMAGE' | 'RETURN'
+export type StockOperationType = 'ENTRY' | 'EXIT' | 'ADJUSTMENT' | 'DAMAGE' | 'RETURN' | 'INITIAL'
 
 export type StockFlowType = 'INBOUND' | 'OUTBOUND'
 
-export type StockReferenceType = 'MANUAL' | 'ORDER'
+export type StockReferenceType = 'MANUAL' | 'ORDER' | 'PURCHASE_ORDER' | 'ADJUSTMENT' | 'DAMAGE_REPORT'
 
-export type StockWriteoffReason = 'DAMAGE' | 'EXPIRY' | 'LOSS' | 'OTHER'
+export type StockWriteoffReason = 'DAMAGED' | 'EXPIRED' | 'DEFECTIVE' | 'CONTAMINATED' | 'LOST' | 'INVENTORY_ERROR' | 'OTHER'
 
 export type CurrencyCode = 'ARS' | 'USD'
 
-export type ProductMeasurementUnit = 'unit' | 'kg' | 'liter' | 'gram' | 'ml'
+export type ProductMeasurementUnit = 'unit' | 'kg' | 'gram' | 'liter' | 'ml' | 'meter' | 'cm' | 'pack' | 'box' | 'dozen'
 
 export type DiscountStatus = 'active' | 'scheduled' | 'expired'
 
@@ -61,8 +61,7 @@ export interface User {
   id: number
   email: string
   isActive: boolean
-  // In list responses, role comes as a plain string
-  role: string
+  role: RoleType | null
   profile: Profile | null
   createdAt: string
   updatedAt: string
@@ -73,7 +72,7 @@ export interface User {
 export interface Category {
   id: number
   name: string
-  description: string | null
+  description?: string
   parentId: number | null
   children?: Category[]
   isActive: boolean
@@ -100,7 +99,6 @@ export interface ProductImage {
   id: number
   productId: number
   url: string
-  altText?: string
   position: number
   createdAt: string
   updatedAt: string
@@ -124,10 +122,11 @@ export interface Product {
 export interface CreateProductDto {
   sku: string
   name: string
-  description?: string
+  description: string
   categoryId: number
   measurementUnit: ProductMeasurementUnit
   measurementValue?: number
+  isActive?: boolean
 }
 
 export interface UpdateProductDto {
@@ -145,7 +144,6 @@ export interface ComboImage {
   id: number
   comboId: number
   url: string
-  altText?: string
   position: number
   createdAt: string
   updatedAt: string
@@ -160,11 +158,11 @@ export interface ComboItem {
 export interface Combo {
   id: number
   name: string
-  description: string | null
+  description: string
   isActive: boolean
-  categoryId: number | null
-  categoryName: string | null
-  items?: ComboItem[]
+  categoryId: number
+  categoryName: string
+  items: ComboItem[]
   createdAt: string
   updatedAt: string
   deletedAt: string | null
@@ -172,9 +170,10 @@ export interface Combo {
 
 export interface CreateComboDto {
   name: string
-  description?: string
-  categoryId?: number
+  description: string
+  categoryId: number
   items: { productId: number; quantity: number }[]
+  isActive?: boolean
 }
 
 export interface UpdateComboDto {
@@ -182,6 +181,7 @@ export interface UpdateComboDto {
   description?: string
   categoryId?: number
   isActive?: boolean
+  items?: { productId: number; quantity: number }[]
 }
 
 // ─── Stock ────────────────────────────────────────────────────────────────────
@@ -209,6 +209,7 @@ export interface StockMovement {
 export interface StockItem {
   id: number
   productId: number
+  productName: string
   locationId: number
   locationName: string
   quantityCurrent: number
@@ -216,7 +217,6 @@ export interface StockItem {
   quantityAvailable: number
   stockMin: number
   stockCritical: number
-  stockMax: number
   movements?: StockMovement[]
   createdAt: string
   updatedAt: string
@@ -417,6 +417,41 @@ export interface Order {
   items?: OrderItem[]
   createdAt: string
   updatedAt: string
+}
+
+// ─── Shop (consumed by mobile client, exposed here for reference) ─────────────
+
+export type StockStatus = 'available' | 'low' | 'critical' | 'out_of_stock'
+
+export interface ShopItem {
+  id: number
+  name: string
+  type: 'product' | 'combo'
+  originalPrice: number
+  finalPrice: number
+  discountAmount: number
+  hasDiscount: boolean
+  inStock: boolean
+  quantityAvailable: number
+  image?: string
+}
+
+export interface ShopDetail {
+  id: number
+  name: string
+  description: string
+  type: 'product' | 'combo'
+  originalPrice: number
+  finalPrice: number
+  discountAmount: number
+  priceAfterDiscount: number
+  taxes: number
+  hasDiscount: boolean
+  inStock: boolean
+  quantityAvailable: number
+  stockStatus: StockStatus
+  images: string[]
+  items?: ComboItem[]
 }
 
 // ─── Analytics ────────────────────────────────────────────────────────────────

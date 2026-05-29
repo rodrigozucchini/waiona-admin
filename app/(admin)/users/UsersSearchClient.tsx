@@ -8,12 +8,12 @@ export function UsersSearchClient() {
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
 
-  function handleSearch(value: string) {
+  function handleFilter(key: 'name' | 'email', value: string) {
     const params = new URLSearchParams(searchParams.toString())
     if (value) {
-      params.set('search', value)
+      params.set(key, value)
     } else {
-      params.delete('search')
+      params.delete(key)
     }
     params.set('page', '1')
     startTransition(() => {
@@ -22,11 +22,21 @@ export function UsersSearchClient() {
   }
 
   return (
-    <input
-      defaultValue={searchParams.get('search') ?? ''}
-      onChange={(e) => handleSearch(e.target.value)}
-      placeholder="Buscar por email..."
-      className={`rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring w-64 ${isPending ? 'opacity-50' : ''}`}
-    />
+    <div className={`flex gap-2 ${isPending ? 'opacity-50' : ''}`}>
+      <input
+        defaultValue={searchParams.get('name') ?? ''}
+        onChange={(e) => handleFilter('name', e.target.value)}
+        placeholder="Nombre o apellido"
+        aria-label="Filtrar por nombre"
+        className="rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring w-44"
+      />
+      <input
+        defaultValue={searchParams.get('email') ?? ''}
+        onChange={(e) => handleFilter('email', e.target.value)}
+        placeholder="Email"
+        aria-label="Filtrar por email"
+        className="rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring w-48"
+      />
+    </div>
   )
 }

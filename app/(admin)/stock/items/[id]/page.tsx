@@ -34,6 +34,7 @@ export default async function StockItemPage({
     ADJUSTMENT: 'Ajuste',
     DAMAGE: 'Daño',
     RETURN: 'Devolución',
+    INITIAL: 'Carga inicial',
   }
 
   return (
@@ -77,10 +78,6 @@ export default async function StockItemPage({
               <div className="flex justify-between">
                 <span>Mínimo</span>
                 <span className="font-mono">{item.stockMin}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Máximo</span>
-                <span className="font-mono">{item.stockMax}</span>
               </div>
             </div>
           </div>
