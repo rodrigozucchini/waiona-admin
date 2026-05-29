@@ -59,7 +59,7 @@ export default async function CouponsPage() {
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {coupon.usageCount}
-                      {coupon.usageLimit !== null ? ` / ${coupon.usageLimit}` : ''}
+                      {coupon.usageLimit !== undefined ? ` / ${coupon.usageLimit}` : ''}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground text-xs">
                       {coupon.endsAt ? formatDate(coupon.endsAt) : '—'}

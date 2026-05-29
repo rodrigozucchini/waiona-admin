@@ -34,10 +34,10 @@ export async function createCoupon(
       value,
       isPercentage,
       isGlobal,
-      currency: isPercentage ? null : 'ARS',
-      usageLimit: usageLimitRaw ? Number(usageLimitRaw) : null,
-      startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : null,
-      endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : null,
+      ...(!isPercentage && { currency: 'ARS' }),
+      usageLimit: usageLimitRaw ? Number(usageLimitRaw) : undefined,
+      startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : undefined,
+      endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : undefined,
     })
     couponId = coupon.id
   } catch (err) {
