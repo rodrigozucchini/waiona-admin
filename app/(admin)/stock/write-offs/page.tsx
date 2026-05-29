@@ -4,9 +4,12 @@ import type { PaginatedResponse, StockWriteOff } from '@/types'
 import { formatDate } from '@/lib/utils'
 
 const reasonLabels: Record<string, string> = {
-  DAMAGE: 'Daño',
-  EXPIRY: 'Vencimiento',
-  LOSS: 'Pérdida',
+  DAMAGED: 'Daño físico',
+  EXPIRED: 'Vencimiento',
+  DEFECTIVE: 'Defecto de fabricación',
+  CONTAMINATED: 'Contaminación',
+  LOST: 'Pérdida',
+  INVENTORY_ERROR: 'Error de inventario',
   OTHER: 'Otro',
 }
 

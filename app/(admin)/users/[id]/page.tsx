@@ -1,6 +1,6 @@
 import { api, ApiError } from '@/lib/api'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import type { User, PaginatedResponse, Order, OrderStatus } from '@/types'
 import { formatDate, formatCurrency } from '@/lib/utils'
 
@@ -33,6 +33,7 @@ export default async function UserDetailPage({
     user = await api.get<User>(`/users/${id}`)
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) notFound()
+    if (err instanceof ApiError && err.status === 403) redirect('/users')
     throw err
   }
 
@@ -88,7 +89,7 @@ export default async function UserDetailPage({
                 <dt>Rol</dt>
                 <dd>
                   <span className="rounded bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
-                    {roleLabels[user.role] ?? user.role}
+                    {user.role ? (roleLabels[user.role] ?? user.role) : '—'}
                   </span>
                 </dd>
               </div>
@@ -98,7 +99,7 @@ export default async function UserDetailPage({
                   {user.isActive ? (
                     <span className="rounded bg-green-100 px-2 py-0.5 text-xs text-green-700">Activo</span>
                   ) : (
-                    <span className="rounded bg-red-100 px-2 py-0.5 text-xs text-red-700">Inactivo</span>
+                    <span className="rounded bg-yellow-100 px-2 py-0.5 text-xs text-yellow-700">Pendiente activación</span>
                   )}
                 </dd>
               </div>

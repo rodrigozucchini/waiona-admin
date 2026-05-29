@@ -13,12 +13,13 @@ const roleLabels: Record<string, string> = {
 export default async function UsersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; search?: string }>
+  searchParams: Promise<{ page?: string; name?: string; email?: string }>
 }) {
-  const { page = '1', search } = await searchParams
+  const { page = '1', name, email } = await searchParams
 
   const query = new URLSearchParams({ page, limit: '20' })
-  if (search) query.set('search', search)
+  if (name) query.set('name', name)
+  if (email) query.set('email', email)
 
   const result = await api.get<PaginatedResponse<User>>(`/users?${query}`)
   const { data: users, total, totalPages } = result
@@ -49,7 +50,6 @@ export default async function UsersPage({
                 <th scope="col" className="px-4 py-3 text-left font-medium">Rol</th>
                 <th scope="col" className="px-4 py-3 text-left font-medium">Estado</th>
                 <th scope="col" className="px-4 py-3 text-left font-medium">Registro</th>
-                <th scope="col" className="px-4 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -62,30 +62,22 @@ export default async function UsersPage({
                     <td className="px-4 py-3 font-mono text-muted-foreground">#{user.id}</td>
                     <td className="px-4 py-3">{user.email}</td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {fullName ?? <span className="italic">Sin perfil</span>}
+                      {fullName ?? <span className="italic text-xs">Sin perfil</span>}
                     </td>
                     <td className="px-4 py-3">
                       <span className="rounded bg-muted px-2 py-0.5 text-xs font-medium">
-                        {roleLabels[user.role] ?? user.role}
+                        {user.role ? (roleLabels[user.role] ?? user.role) : '—'}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       {user.isActive ? (
                         <span className="rounded bg-green-100 px-2 py-0.5 text-xs text-green-700">Activo</span>
                       ) : (
-                        <span className="rounded bg-red-100 px-2 py-0.5 text-xs text-red-700">Inactivo</span>
+                        <span className="rounded bg-yellow-100 px-2 py-0.5 text-xs text-yellow-700">Pendiente</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
                       {formatDate(user.createdAt)}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Link
-                        href={`/users/${user.id}`}
-                        className="text-sm text-primary hover:underline"
-                      >
-                        Ver perfil
-                      </Link>
                     </td>
                   </tr>
                 )
@@ -101,7 +93,7 @@ export default async function UsersPage({
           <div className="flex gap-2">
             {currentPage > 1 && (
               <Link
-                href={`/users?page=${currentPage - 1}${search ? `&search=${search}` : ''}`}
+                href={`/users?${new URLSearchParams({ page: String(currentPage - 1), ...(name && { name }), ...(email && { email }) })}`}
                 className="rounded-md border px-3 py-1.5 hover:bg-muted"
               >
                 Anterior
@@ -112,7 +104,7 @@ export default async function UsersPage({
             </span>
             {currentPage < totalPages && (
               <Link
-                href={`/users?page=${currentPage + 1}${search ? `&search=${search}` : ''}`}
+                href={`/users?${new URLSearchParams({ page: String(currentPage + 1), ...(name && { name }), ...(email && { email }) })}`}
                 className="rounded-md border px-3 py-1.5 hover:bg-muted"
               >
                 Siguiente
