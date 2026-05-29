@@ -2,9 +2,13 @@
 
 import { useTransition } from 'react'
 
+interface ActionResult {
+  status: string
+  message?: string
+}
+
 interface Props {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: () => Promise<any>
+  action: () => Promise<ActionResult | void>
   label?: string
   confirmMessage?: string
 }
@@ -18,7 +22,12 @@ export function DeleteButton({
 
   function handleClick() {
     if (!confirm(confirmMessage)) return
-    startTransition(() => action())
+    startTransition(async () => {
+      const result = await action()
+      if (result && result.status === 'error' && result.message) {
+        alert(result.message)
+      }
+    })
   }
 
   return (

@@ -31,8 +31,8 @@ export default async function CouponDetailPage({
   }
 
   const [productTargets, comboTargets, productsResult, combosResult] = await Promise.all([
-    api.get<PaginatedResponse<CouponProductTarget>>(`/coupons/${id}/targets/products?limit=100`),
-    api.get<PaginatedResponse<CouponComboTarget>>(`/coupons/${id}/targets/combos?limit=100`),
+    api.get<CouponProductTarget[]>(`/coupons/${id}/targets/products`),
+    api.get<CouponComboTarget[]>(`/coupons/${id}/targets/combos`),
     api.get<PaginatedResponse<Product>>('/products?limit=100'),
     api.get<PaginatedResponse<Combo>>('/combos?limit=100'),
   ])
@@ -62,7 +62,7 @@ export default async function CouponDetailPage({
               <div className="flex justify-between">
                 <span>Valor</span>
                 <span className="font-medium text-foreground">
-                  {coupon.isPercentage ? `${coupon.value}%` : `$${coupon.value}`}
+                  {coupon.value}%
                 </span>
               </div>
               <div className="flex justify-between">
@@ -75,7 +75,7 @@ export default async function CouponDetailPage({
                 <span>Usos</span>
                 <span className="font-medium text-foreground">
                   {coupon.usageCount}
-                  {coupon.usageLimit !== null ? ` / ${coupon.usageLimit}` : ' (sin límite)'}
+                  {coupon.usageLimit !== undefined ? ` / ${coupon.usageLimit}` : ' (sin límite)'}
                 </span>
               </div>
               {coupon.startsAt && (
@@ -111,8 +111,8 @@ export default async function CouponDetailPage({
           ) : (
             <CouponTargetsClient
               couponId={coupon.id}
-              productTargets={productTargets.data}
-              comboTargets={comboTargets.data}
+              productTargets={productTargets}
+              comboTargets={comboTargets}
               allProducts={productsResult.data}
               allCombos={combosResult.data}
             />

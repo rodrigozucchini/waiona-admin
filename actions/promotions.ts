@@ -17,7 +17,6 @@ export async function createCoupon(
 ): Promise<PromotionActionState> {
   const code = (formData.get('code') as string).toUpperCase().trim()
   const value = Number(formData.get('value'))
-  const isPercentage = formData.get('isPercentage') === 'true'
   const isGlobal = formData.get('isGlobal') === 'true'
   const usageLimitRaw = formData.get('usageLimit') as string
   const startsAtRaw = formData.get('startsAt') as string
@@ -25,19 +24,17 @@ export async function createCoupon(
 
   if (!code) return { status: 'error', message: 'El código es requerido' }
   if (!value || value <= 0) return { status: 'error', message: 'El valor debe ser mayor a 0' }
-  if (isPercentage && value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
+  if (value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
 
   let couponId: number
   try {
     const coupon = await api.post<{ id: number }>('/coupons', {
       code,
       value,
-      isPercentage,
       isGlobal,
-      currency: isPercentage ? null : 'ARS',
-      usageLimit: usageLimitRaw ? Number(usageLimitRaw) : null,
-      startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : null,
-      endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : null,
+      usageLimit: usageLimitRaw ? Number(usageLimitRaw) : undefined,
+      startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : undefined,
+      endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : undefined,
     })
     couponId = coupon.id
   } catch (err) {
@@ -189,7 +186,10 @@ export async function addDiscountProductTarget(discountId: number, productId: nu
   try {
     await api.post(`/discounts/${discountId}/targets/products`, { productId })
   } catch (err) {
-    if (err instanceof ApiError) return { status: 'error', message: err.message }
+    if (err instanceof ApiError) {
+      if (err.status === 409) return { status: 'error', message: 'Este producto ya tiene un descuento asignado. Eliminá el descuento anterior primero.' }
+      return { status: 'error', message: err.message }
+    }
     return { status: 'error', message: 'Error al asignar producto' }
   }
   revalidatePath(`/promotions/discounts/${discountId}`)
@@ -211,7 +211,10 @@ export async function addDiscountComboTarget(discountId: number, comboId: number
   try {
     await api.post(`/discounts/${discountId}/targets/combos`, { comboId })
   } catch (err) {
-    if (err instanceof ApiError) return { status: 'error', message: err.message }
+    if (err instanceof ApiError) {
+      if (err.status === 409) return { status: 'error', message: 'Este combo ya tiene un descuento asignado. Eliminá el descuento anterior primero.' }
+      return { status: 'error', message: err.message }
+    }
     return { status: 'error', message: 'Error al asignar combo' }
   }
   revalidatePath(`/promotions/discounts/${discountId}`)

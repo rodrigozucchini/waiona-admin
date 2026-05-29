@@ -1,46 +1,71 @@
 'use client'
 
-import { useActionState, useState } from 'react'
-import type { Product, Margin, ProductPricing } from '@/types'
+import { useActionState, useState, useTransition, useEffect } from 'react'
+import type { Product, Margin, ProductPricing, PriceBreakdown } from '@/types'
 import {
   createProductPricing,
   updateProductPricing,
   deleteProductPricing,
-  type PricingActionState,
 } from '@/actions/pricing'
 
 interface Props {
   products: Product[]
   pricings: ProductPricing[]
   margins: Margin[]
+  calculations: Record<number, PriceBreakdown>
 }
 
-export function ProductPricingClient({ products, pricings, margins }: Props) {
+function fmt(n: number) {
+  return n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+export function ProductPricingClient({ products, pricings, margins, calculations }: Props) {
   const [showForm, setShowForm] = useState(false)
   const [createState, createAction, isCreating] = useActionState(createProductPricing, { status: 'idle' })
+  const [previewUnitPrice, setPreviewUnitPrice] = useState('')
+  const [previewMarginId, setPreviewMarginId] = useState('')
+  const [preview, setPreview] = useState<PriceBreakdown | null>(null)
 
-  // Group pricings by productId
+  const pricedProductIds = new Set(pricings.map((p) => p.productId))
+  const productsWithoutPricing = products.filter((p) => !pricedProductIds.has(p.id))
+
   const pricingByProduct = pricings.reduce<Record<number, ProductPricing[]>>((acc, p) => {
     acc[p.productId] = acc[p.productId] ?? []
     acc[p.productId].push(p)
     return acc
   }, {})
-
   const productsWithPricing = products.filter((p) => pricingByProduct[p.id])
-  const productsWithoutPricing = products.filter((p) => !pricingByProduct[p.id])
 
   function getMarginLabel(marginId: number | null) {
     if (!marginId) return '—'
     const m = margins.find((m) => m.id === marginId)
-    if (!m) return '—'
-    return m.isPercentage ? `${m.name} (${m.value}%)` : `${m.name} ($${m.value})`
+    return m ? `${m.name} (${m.value}%)` : '—'
   }
+
+  useEffect(() => {
+    const unitPrice = Number(previewUnitPrice)
+    if (!unitPrice || unitPrice <= 0) { setPreview(null); return }
+    const margin = margins.find((m) => String(m.id) === previewMarginId)
+    const body: Record<string, unknown> = { unitPrice }
+    if (margin) body.marginValue = margin.value
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/pricing/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+        if (res.ok) setPreview(await res.json())
+      } catch { /* ignore */ }
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [previewUnitPrice, previewMarginId, margins])
 
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => { setShowForm(!showForm); setPreviewUnitPrice(''); setPreviewMarginId('') }}
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
           {showForm ? 'Cancelar' : 'Agregar precio'}
@@ -48,70 +73,68 @@ export function ProductPricingClient({ products, pricings, margins }: Props) {
       </div>
 
       {showForm && (
-        <div className="rounded-lg border p-4 max-w-lg">
-          <h2 className="mb-3 font-medium">Nuevo precio</h2>
+        <div className="rounded-lg border p-4 max-w-lg space-y-3">
+          <h2 className="font-medium">Nuevo precio</h2>
           <form action={createAction} className="space-y-3">
             <div className="space-y-1">
               <label htmlFor="productId" className="text-sm font-medium">Producto</label>
-              <select
-                id="productId"
-                name="productId"
-                required
-                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Seleccionar producto</option>
-                {products.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
-                ))}
-              </select>
+              {productsWithoutPricing.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Todos los productos ya tienen precio configurado.</p>
+              ) : (
+                <select id="productId" name="productId" required
+                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                  <option value="">Seleccionar producto</option>
+                  {productsWithoutPricing.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
+                  ))}
+                </select>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label htmlFor="currency" className="text-sm font-medium">Moneda</label>
-                <select
-                  id="currency"
-                  name="currency"
-                  required
-                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                >
+                <select id="currency" name="currency" required
+                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                   <option value="ARS">ARS</option>
                   <option value="USD">USD</option>
                 </select>
               </div>
               <div className="space-y-1">
                 <label htmlFor="unitPrice" className="text-sm font-medium">Precio unitario</label>
-                <input
-                  id="unitPrice"
-                  name="unitPrice"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  required
-                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                />
+                <input id="unitPrice" name="unitPrice" type="number" step="0.01" min="0" required
+                  value={previewUnitPrice} onChange={(e) => setPreviewUnitPrice(e.target.value)}
+                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
             <div className="space-y-1">
-              <label htmlFor="marginId" className="text-sm font-medium">Margen (opcional)</label>
-              <select
-                id="marginId"
-                name="marginId"
-                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
+              <label htmlFor="marginId" className="text-sm font-medium">
+                Margen <span className="text-muted-foreground font-normal">(opcional)</span>
+              </label>
+              <select id="marginId" name="marginId" value={previewMarginId}
+                onChange={(e) => setPreviewMarginId(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 <option value="">Sin margen</option>
                 {margins.map((m) => (
-                  <option key={m.id} value={m.id}>{m.name} ({m.isPercentage ? `${m.value}%` : `$${m.value}`})</option>
+                  <option key={m.id} value={m.id}>{m.name} ({m.value}%)</option>
                 ))}
               </select>
             </div>
+
+            {preview && (
+              <div className="rounded-md bg-muted px-3 py-2 text-xs space-y-0.5">
+                <p className="text-muted-foreground mb-1">Vista previa (sin impuestos del producto)</p>
+                <div className="flex justify-between"><span>Precio base</span><span className="font-mono">{fmt(preview.unitPrice)}</span></div>
+                {preview.margin > 0 && <div className="flex justify-between"><span>Margen</span><span className="font-mono">+{fmt(preview.margin)}</span></div>}
+                {preview.priceAfterMargin !== preview.unitPrice && <div className="flex justify-between"><span>Precio c/ margen</span><span className="font-mono">{fmt(preview.priceAfterMargin)}</span></div>}
+                <div className="flex justify-between font-medium border-t pt-0.5 mt-0.5"><span>Precio final estimado</span><span className="font-mono">{fmt(preview.finalPrice)}</span></div>
+              </div>
+            )}
+
             {createState.status === 'error' && (
               <p role="alert" className="text-sm text-destructive">{createState.message}</p>
             )}
-            <button
-              type="submit"
-              disabled={isCreating}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
-            >
+            <button type="submit" disabled={isCreating || productsWithoutPricing.length === 0}
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">
               {isCreating ? 'Guardando...' : 'Guardar'}
             </button>
           </form>
@@ -130,12 +153,16 @@ export function ProductPricingClient({ products, pricings, margins }: Props) {
               <tr>
                 <th scope="col" className="px-4 py-3 text-left font-medium">Producto</th>
                 <th scope="col" className="px-4 py-3 text-left font-medium">Moneda</th>
-                <th scope="col" className="px-4 py-3 text-left font-medium">Precio base</th>
+                <th scope="col" className="px-4 py-3 text-right font-medium">Precio base</th>
+                <th scope="col" className="px-4 py-3 text-right font-medium">Precio final</th>
+                <th scope="col" className="px-4 py-3 text-right font-medium">Sin descuento</th>
                 <th scope="col" className="px-4 py-3 text-left font-medium">Margen</th>
-                <th scope="col" className="px-4 py-3" />
+                <th scope="col" className="px-4 py-3">
+                  <span className="sr-only">Acciones</span>
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody>
               {productsWithPricing.flatMap((product) =>
                 (pricingByProduct[product.id] ?? []).map((pricing) => (
                   <PricingRow
@@ -144,6 +171,7 @@ export function ProductPricingClient({ products, pricings, margins }: Props) {
                     pricing={pricing}
                     margins={margins}
                     getMarginLabel={getMarginLabel}
+                    breakdown={calculations[product.id] ?? null}
                   />
                 ))
               )}
@@ -154,10 +182,53 @@ export function ProductPricingClient({ products, pricings, margins }: Props) {
 
       {productsWithoutPricing.length > 0 && (
         <p className="text-xs text-muted-foreground">
-          {productsWithoutPricing.length} producto(s) sin precio configurado.
+          {productsWithoutPricing.length} producto{productsWithoutPricing.length !== 1 ? 's' : ''} sin precio configurado.
         </p>
       )}
     </div>
+  )
+}
+
+function BreakdownDetail({ b }: { b: PriceBreakdown }) {
+  return (
+    <tr className="bg-muted/30">
+      <td colSpan={7} className="px-6 py-3">
+        <div className="grid grid-cols-2 gap-x-12 gap-y-1 text-xs max-w-lg">
+          <Row label="Precio base" value={b.unitPrice} />
+          <Row label="Descuento" value={-b.discount} highlight={b.discount > 0 ? 'green' : undefined} />
+          <Row label="Precio c/ descuento" value={b.priceAfterDiscount} />
+          <Row label="Margen" value={b.margin} />
+          <Row label="Precio c/ margen" value={b.priceAfterMargin} />
+          <Row label="Impuestos" value={b.taxes} />
+          <Row label="Precio final" value={b.finalPrice} bold />
+          <Row label="Precio completo (sin descuento)" value={b.fullPrice} muted />
+        </div>
+      </td>
+    </tr>
+  )
+}
+
+function Row({
+  label,
+  value,
+  bold,
+  muted,
+  highlight,
+}: {
+  label: string
+  value: number
+  bold?: boolean
+  muted?: boolean
+  highlight?: 'green'
+}) {
+  const colorClass = highlight === 'green' ? 'text-green-700' : muted ? 'text-muted-foreground' : ''
+  return (
+    <>
+      <span className={`${muted ? 'text-muted-foreground' : ''}`}>{label}</span>
+      <span className={`font-mono text-right ${bold ? 'font-semibold' : ''} ${colorClass}`}>
+        {value < 0 ? '-' : ''}{Math.abs(value).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      </span>
+    </>
   )
 }
 
@@ -166,50 +237,48 @@ function PricingRow({
   pricing,
   margins,
   getMarginLabel,
+  breakdown,
 }: {
   productName: string
   pricing: ProductPricing
   margins: Margin[]
   getMarginLabel: (id: number | null) => string
+  breakdown: PriceBreakdown | null
 }) {
   const [isEditing, setIsEditing] = useState(false)
+  const [showBreakdown, setShowBreakdown] = useState(false)
+  const [isDeleting, startDeleteTransition] = useTransition()
   const updateWithId = updateProductPricing.bind(null, pricing.id)
   const [updateState, updateAction, isUpdating] = useActionState(updateWithId, { status: 'idle' })
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!confirm('¿Eliminar este precio?')) return
-    await deleteProductPricing(pricing.id)
+    startDeleteTransition(async () => { await deleteProductPricing(pricing.id) })
   }
 
   if (isEditing) {
     return (
-      <tr>
+      <tr className="border-t">
         <td className="px-4 py-3 font-medium">{productName}</td>
-        <td className="px-4 py-3">{pricing.currency}</td>
-        <td colSpan={3} className="px-4 py-3">
-          <form action={updateAction} className="flex gap-3 items-end">
-            <input
-              name="unitPrice"
-              type="number"
-              step="0.01"
-              min="0"
-              defaultValue={pricing.unitPrice}
-              className="w-32 rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <select
-              name="marginId"
-              defaultValue={pricing.marginId ?? ''}
-              className="rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            >
+        <td className="px-4 py-3 text-muted-foreground">{pricing.currency}</td>
+        <td colSpan={5} className="px-4 py-3">
+          <form action={updateAction} className="flex gap-3 items-center flex-wrap">
+            <input name="unitPrice" type="number" step="0.01" min="0" defaultValue={pricing.unitPrice}
+              className="w-32 rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+            <select name="marginId" defaultValue={pricing.marginId ?? ''}
+              className="rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
               <option value="">Sin margen</option>
               {margins.map((m) => (
-                <option key={m.id} value={m.id}>{m.name} ({m.isPercentage ? `${m.value}%` : `$${m.value}`})</option>
+                <option key={m.id} value={m.id}>{m.name} ({m.value}%)</option>
               ))}
             </select>
-            <button type="submit" disabled={isUpdating} className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50">
+            <button type="submit" disabled={isUpdating}
+              className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50">
               {isUpdating ? '...' : 'Guardar'}
             </button>
-            <button type="button" onClick={() => setIsEditing(false)} className="rounded-md border px-3 py-1.5 text-xs">Cancelar</button>
+            <button type="button" onClick={() => setIsEditing(false)} className="rounded-md border px-3 py-1.5 text-xs">
+              Cancelar
+            </button>
           </form>
           {updateState.status === 'error' && (
             <p className="mt-1 text-xs text-destructive">{updateState.message}</p>
@@ -220,17 +289,39 @@ function PricingRow({
   }
 
   return (
-    <tr className="hover:bg-muted/30">
-      <td className="px-4 py-3 font-medium">{productName}</td>
-      <td className="px-4 py-3">{pricing.currency}</td>
-      <td className="px-4 py-3">{pricing.unitPrice.toLocaleString('es-AR')}</td>
-      <td className="px-4 py-3 text-muted-foreground">{getMarginLabel(pricing.marginId)}</td>
-      <td className="px-4 py-3">
-        <div className="flex justify-end gap-3">
-          <button onClick={() => setIsEditing(true)} className="text-sm text-primary hover:underline">Editar</button>
-          <button onClick={handleDelete} className="text-sm text-destructive hover:underline">Eliminar</button>
-        </div>
-      </td>
-    </tr>
+    <>
+      <tr className="border-t hover:bg-muted/20">
+        <td className="px-4 py-3 font-medium">{productName}</td>
+        <td className="px-4 py-3 text-muted-foreground">{pricing.currency}</td>
+        <td className="px-4 py-3 text-right font-mono">{fmt(pricing.unitPrice)}</td>
+        <td className="px-4 py-3 text-right font-mono font-medium">
+          {breakdown ? fmt(breakdown.finalPrice) : <span className="text-muted-foreground text-xs">—</span>}
+        </td>
+        <td className="px-4 py-3 text-right font-mono text-muted-foreground">
+          {breakdown && breakdown.fullPrice !== breakdown.finalPrice
+            ? <span className="line-through">{fmt(breakdown.fullPrice)}</span>
+            : <span className="text-xs">—</span>}
+        </td>
+        <td className="px-4 py-3 text-muted-foreground">{getMarginLabel(pricing.marginId)}</td>
+        <td className="px-4 py-3">
+          <div className="flex justify-end gap-3">
+            {breakdown && (
+              <button onClick={() => setShowBreakdown(!showBreakdown)}
+                className="text-xs text-muted-foreground hover:text-foreground hover:underline">
+                {showBreakdown ? 'Ocultar' : 'Desglose'}
+              </button>
+            )}
+            <button onClick={() => setIsEditing(true)} className="text-sm text-primary hover:underline">
+              Editar
+            </button>
+            <button onClick={handleDelete} disabled={isDeleting}
+              className="text-sm text-destructive hover:underline disabled:opacity-50">
+              {isDeleting ? '...' : 'Eliminar'}
+            </button>
+          </div>
+        </td>
+      </tr>
+      {showBreakdown && breakdown && <BreakdownDetail b={breakdown} />}
+    </>
   )
 }

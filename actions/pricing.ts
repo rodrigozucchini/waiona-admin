@@ -85,7 +85,7 @@ export async function createProductPricing(
   const currency = formData.get('currency') as string
   const unitPrice = Number(formData.get('unitPrice'))
   const marginIdRaw = formData.get('marginId') as string
-  const marginId = marginIdRaw ? Number(marginIdRaw) : null
+  const marginId = marginIdRaw ? Number(marginIdRaw) : undefined
 
   if (!productId) return { status: 'error', message: 'El producto es requerido' }
   if (!currency) return { status: 'error', message: 'La moneda es requerida' }
@@ -149,7 +149,7 @@ export async function createComboPricing(
   const currency = formData.get('currency') as string
   const unitPrice = Number(formData.get('unitPrice'))
   const marginIdRaw = formData.get('marginId') as string
-  const marginId = marginIdRaw ? Number(marginIdRaw) : null
+  const marginId = marginIdRaw ? Number(marginIdRaw) : undefined
 
   if (!comboId) return { status: 'error', message: 'El combo es requerido' }
   if (!currency) return { status: 'error', message: 'La moneda es requerida' }

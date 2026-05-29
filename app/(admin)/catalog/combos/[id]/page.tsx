@@ -71,7 +71,7 @@ export default async function EditComboPage({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={img.url}
-                      alt={img.altText || combo.name}
+                      alt={combo.name}
                       className="h-24 w-full object-cover"
                     />
                   </div>

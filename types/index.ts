@@ -248,7 +248,7 @@ export interface Margin {
 export interface ProductPricing {
   id: number
   productId: number
-  currency: CurrencyCode
+  currency: string
   unitPrice: number
   marginId: number | null
   createdAt: string
@@ -258,7 +258,7 @@ export interface ProductPricing {
 export interface ComboPricing {
   id: number
   comboId: number
-  currency: CurrencyCode
+  currency: string
   unitPrice: number
   marginId: number | null
   createdAt: string
@@ -313,13 +313,11 @@ export interface Coupon {
   code: string
   status: CouponStatus
   value: number
-  isPercentage: boolean
-  currency: CurrencyCode
   isGlobal: boolean
-  usageLimit: number | null
+  usageLimit?: number
   usageCount: number
-  startsAt: string | null
-  endsAt: string | null
+  startsAt?: string
+  endsAt?: string
   createdAt: string
   updatedAt: string
 }
