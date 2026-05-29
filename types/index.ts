@@ -248,7 +248,7 @@ export interface Margin {
 export interface ProductPricing {
   id: number
   productId: number
-  currency: CurrencyCode
+  currency: string
   unitPrice: number
   marginId: number | null
   createdAt: string
@@ -258,7 +258,7 @@ export interface ProductPricing {
 export interface ComboPricing {
   id: number
   comboId: number
-  currency: CurrencyCode
+  currency: string
   unitPrice: number
   marginId: number | null
   createdAt: string
