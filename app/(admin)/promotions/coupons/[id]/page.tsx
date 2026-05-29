@@ -62,7 +62,7 @@ export default async function CouponDetailPage({
               <div className="flex justify-between">
                 <span>Valor</span>
                 <span className="font-medium text-foreground">
-                  {coupon.isPercentage ? `${coupon.value}%` : `$${coupon.value}`}
+                  {coupon.value}%
                 </span>
               </div>
               <div className="flex justify-between">

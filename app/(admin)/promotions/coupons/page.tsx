@@ -50,7 +50,7 @@ export default async function CouponsPage() {
                   <tr key={coupon.id} className="hover:bg-muted/30">
                     <td className="px-4 py-3 font-mono font-medium">{coupon.code}</td>
                     <td className="px-4 py-3">
-                      {coupon.isPercentage ? `${coupon.value}%` : `$${coupon.value}`}
+                      {coupon.value}%
                     </td>
                     <td className="px-4 py-3">
                       <span className={`rounded px-2 py-0.5 text-xs ${cfg.className}`}>

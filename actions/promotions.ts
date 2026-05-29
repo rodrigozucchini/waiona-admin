@@ -17,7 +17,6 @@ export async function createCoupon(
 ): Promise<PromotionActionState> {
   const code = (formData.get('code') as string).toUpperCase().trim()
   const value = Number(formData.get('value'))
-  const isPercentage = formData.get('isPercentage') === 'true'
   const isGlobal = formData.get('isGlobal') === 'true'
   const usageLimitRaw = formData.get('usageLimit') as string
   const startsAtRaw = formData.get('startsAt') as string
@@ -25,16 +24,14 @@ export async function createCoupon(
 
   if (!code) return { status: 'error', message: 'El código es requerido' }
   if (!value || value <= 0) return { status: 'error', message: 'El valor debe ser mayor a 0' }
-  if (isPercentage && value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
+  if (value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
 
   let couponId: number
   try {
     const coupon = await api.post<{ id: number }>('/coupons', {
       code,
       value,
-      isPercentage,
       isGlobal,
-      ...(!isPercentage && { currency: 'ARS' }),
       usageLimit: usageLimitRaw ? Number(usageLimitRaw) : undefined,
       startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : undefined,
       endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : undefined,

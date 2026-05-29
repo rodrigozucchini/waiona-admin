@@ -313,8 +313,6 @@ export interface Coupon {
   code: string
   status: CouponStatus
   value: number
-  isPercentage: boolean
-  currency?: string
   isGlobal: boolean
   usageLimit?: number
   usageCount: number
