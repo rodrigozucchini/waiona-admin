@@ -186,7 +186,10 @@ export async function addDiscountProductTarget(discountId: number, productId: nu
   try {
     await api.post(`/discounts/${discountId}/targets/products`, { productId })
   } catch (err) {
-    if (err instanceof ApiError) return { status: 'error', message: err.message }
+    if (err instanceof ApiError) {
+      if (err.status === 409) return { status: 'error', message: 'Este producto ya tiene un descuento asignado. Eliminá el descuento anterior primero.' }
+      return { status: 'error', message: err.message }
+    }
     return { status: 'error', message: 'Error al asignar producto' }
   }
   revalidatePath(`/promotions/discounts/${discountId}`)
@@ -208,7 +211,10 @@ export async function addDiscountComboTarget(discountId: number, comboId: number
   try {
     await api.post(`/discounts/${discountId}/targets/combos`, { comboId })
   } catch (err) {
-    if (err instanceof ApiError) return { status: 'error', message: err.message }
+    if (err instanceof ApiError) {
+      if (err.status === 409) return { status: 'error', message: 'Este combo ya tiene un descuento asignado. Eliminá el descuento anterior primero.' }
+      return { status: 'error', message: err.message }
+    }
     return { status: 'error', message: 'Error al asignar combo' }
   }
   revalidatePath(`/promotions/discounts/${discountId}`)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useState, useTransition } from 'react'
+import { useActionState, useState, useTransition, useEffect } from 'react'
 import type { Product, Margin, ProductPricing, PriceBreakdown } from '@/types'
 import {
   createProductPricing,
@@ -19,18 +19,12 @@ function fmt(n: number) {
   return n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-function computePreview(unitPrice: number, marginIdStr: string, margins: Margin[]) {
-  if (!unitPrice || unitPrice <= 0) return null
-  const margin = margins.find((m) => String(m.id) === marginIdStr)
-  const priceAfterMargin = margin ? unitPrice * (1 + margin.value / 100) : null
-  return { unitPrice, margin: margin ?? null, priceAfterMargin }
-}
-
 export function ProductPricingClient({ products, pricings, margins, calculations }: Props) {
   const [showForm, setShowForm] = useState(false)
   const [createState, createAction, isCreating] = useActionState(createProductPricing, { status: 'idle' })
   const [previewUnitPrice, setPreviewUnitPrice] = useState('')
   const [previewMarginId, setPreviewMarginId] = useState('')
+  const [preview, setPreview] = useState<PriceBreakdown | null>(null)
 
   const pricedProductIds = new Set(pricings.map((p) => p.productId))
   const productsWithoutPricing = products.filter((p) => !pricedProductIds.has(p.id))
@@ -48,7 +42,24 @@ export function ProductPricingClient({ products, pricings, margins, calculations
     return m ? `${m.name} (${m.value}%)` : '—'
   }
 
-  const preview = computePreview(Number(previewUnitPrice), previewMarginId, margins)
+  useEffect(() => {
+    const unitPrice = Number(previewUnitPrice)
+    if (!unitPrice || unitPrice <= 0) { setPreview(null); return }
+    const margin = margins.find((m) => String(m.id) === previewMarginId)
+    const body: Record<string, unknown> = { unitPrice }
+    if (margin) body.marginValue = margin.value
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/pricing/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+        if (res.ok) setPreview(await res.json())
+      } catch { /* ignore */ }
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [previewUnitPrice, previewMarginId, margins])
 
   return (
     <div className="space-y-4">
@@ -111,17 +122,11 @@ export function ProductPricingClient({ products, pricings, margins, calculations
 
             {preview && (
               <div className="rounded-md bg-muted px-3 py-2 text-xs space-y-0.5">
-                <p className="text-muted-foreground mb-1">Vista previa (sin impuestos ni descuentos)</p>
-                <div className="flex justify-between">
-                  <span>Precio base</span>
-                  <span className="font-mono">{fmt(preview.unitPrice)}</span>
-                </div>
-                {preview.margin && preview.priceAfterMargin && (
-                  <div className="flex justify-between">
-                    <span>Con margen ({preview.margin.value}%)</span>
-                    <span className="font-mono font-medium">{fmt(preview.priceAfterMargin)}</span>
-                  </div>
-                )}
+                <p className="text-muted-foreground mb-1">Vista previa (sin impuestos del producto)</p>
+                <div className="flex justify-between"><span>Precio base</span><span className="font-mono">{fmt(preview.unitPrice)}</span></div>
+                {preview.margin > 0 && <div className="flex justify-between"><span>Margen</span><span className="font-mono">+{fmt(preview.margin)}</span></div>}
+                {preview.priceAfterMargin !== preview.unitPrice && <div className="flex justify-between"><span>Precio c/ margen</span><span className="font-mono">{fmt(preview.priceAfterMargin)}</span></div>}
+                <div className="flex justify-between font-medium border-t pt-0.5 mt-0.5"><span>Precio final estimado</span><span className="font-mono">{fmt(preview.finalPrice)}</span></div>
               </div>
             )}
 

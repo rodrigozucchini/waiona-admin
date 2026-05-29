@@ -151,7 +151,7 @@ export function DiscountDetailClient({
         <div className="rounded-lg border p-4 space-y-3">
           <h2 className="font-medium text-sm">
             Productos target
-            <span className="ml-2 text-xs text-muted-foreground font-normal">(vacío = aplica a todo)</span>
+            <span className="ml-2 text-xs text-muted-foreground font-normal">(un producto solo puede tener un descuento a la vez)</span>
           </h2>
           {productTargets.length === 0 ? (
             <p className="text-xs text-muted-foreground">Sin productos asignados.</p>
@@ -205,7 +205,7 @@ export function DiscountDetailClient({
         <div className="rounded-lg border p-4 space-y-3">
           <h2 className="font-medium text-sm">
             Combos target
-            <span className="ml-2 text-xs text-muted-foreground font-normal">(vacío = aplica a todo)</span>
+            <span className="ml-2 text-xs text-muted-foreground font-normal">(un combo solo puede tener un descuento a la vez)</span>
           </h2>
           {comboTargets.length === 0 ? (
             <p className="text-xs text-muted-foreground">Sin combos asignados.</p>

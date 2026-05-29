@@ -7,9 +7,14 @@ import type { ProductActionState } from '@/actions/products'
 const MEASUREMENT_UNITS = [
   { value: 'unit', label: 'Unidad' },
   { value: 'kg', label: 'Kilogramo' },
-  { value: 'liter', label: 'Litro' },
   { value: 'gram', label: 'Gramo' },
+  { value: 'liter', label: 'Litro' },
   { value: 'ml', label: 'Mililitro' },
+  { value: 'meter', label: 'Metro' },
+  { value: 'cm', label: 'Centímetro' },
+  { value: 'pack', label: 'Pack' },
+  { value: 'box', label: 'Caja' },
+  { value: 'dozen', label: 'Docena' },
 ]
 
 interface Props {
@@ -56,13 +61,16 @@ export function ProductForm({ action, product, categories }: Props) {
 
       <div className="space-y-1">
         <label htmlFor="description" className="text-sm font-medium">
-          Descripción
+          Descripción <span className="text-destructive">*</span>
         </label>
         <textarea
           id="description"
           name="description"
           defaultValue={product?.description ?? ''}
           rows={3}
+          required
+          minLength={5}
+          maxLength={255}
           className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>

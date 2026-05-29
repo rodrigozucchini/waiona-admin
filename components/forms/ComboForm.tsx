@@ -64,25 +64,33 @@ export function ComboForm({ action, combo, categories, products }: Props) {
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="description" className="text-sm font-medium">Descripción</label>
+        <label htmlFor="description" className="text-sm font-medium">
+          Descripción <span className="text-destructive">*</span>
+        </label>
         <textarea
           id="description"
           name="description"
           defaultValue={combo?.description ?? ''}
           rows={3}
+          required
+          minLength={5}
+          maxLength={255}
           className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="categoryId" className="text-sm font-medium">Categoría</label>
+        <label htmlFor="categoryId" className="text-sm font-medium">
+          Categoría <span className="text-destructive">*</span>
+        </label>
         <select
           id="categoryId"
           name="categoryId"
           defaultValue={combo?.categoryId ?? ''}
+          required
           className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         >
-          <option value="">Sin categoría</option>
+          <option value="">Seleccionar categoría</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}

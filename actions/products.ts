@@ -14,22 +14,26 @@ export async function createProduct(
   _prev: ProductActionState,
   formData: FormData
 ): Promise<ProductActionState> {
+  const sku = (formData.get('sku') as string).trim()
+  const name = (formData.get('name') as string).trim()
+  const description = (formData.get('description') as string).trim()
+  const categoryId = Number(formData.get('categoryId'))
+
+  if (!sku) return { status: 'error', message: 'El SKU es requerido' }
+  if (!name) return { status: 'error', message: 'El nombre es requerido' }
+  if (!description || description.length < 5) return { status: 'error', message: 'La descripción es requerida (mínimo 5 caracteres)' }
+  if (!categoryId) return { status: 'error', message: 'La categoría es requerida' }
+
   const dto: CreateProductDto = {
-    sku: (formData.get('sku') as string).trim().toUpperCase(),
-    name: (formData.get('name') as string).trim(),
-    categoryId: Number(formData.get('categoryId')),
+    sku,
+    name,
+    description,
+    categoryId,
     measurementUnit: formData.get('measurementUnit') as CreateProductDto['measurementUnit'],
   }
 
-  const description = (formData.get('description') as string).trim()
-  if (description) dto.description = description
-
   const measurementValue = formData.get('measurementValue') as string
   if (measurementValue) dto.measurementValue = Number(measurementValue)
-
-  if (!dto.sku) return { status: 'error', message: 'El SKU es requerido' }
-  if (!dto.name) return { status: 'error', message: 'El nombre es requerido' }
-  if (!dto.categoryId) return { status: 'error', message: 'La categoría es requerida' }
 
   try {
     await api.post<Product>('/products', dto)
