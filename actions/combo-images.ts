@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 import { cookies } from 'next/headers'
 import { api, ApiError } from '@/lib/api'
 import type { ComboImage } from '@/types'
@@ -45,8 +45,7 @@ export async function uploadComboImage(
     return { status: 'error', message: err.message }
   }
 
-  revalidatePath(`/catalog/combos/${comboId}`)
-  revalidatePath(`/catalog/combos/${comboId}/images`)
+  revalidateTag('combos', 'default')
   return { status: 'success' }
 }
 
@@ -61,8 +60,7 @@ export async function deleteComboImage(
     return { status: 'error', message: 'Error al eliminar la imagen' }
   }
 
-  revalidatePath(`/catalog/combos/${comboId}`)
-  revalidatePath(`/catalog/combos/${comboId}/images`)
+  revalidateTag('combos', 'default')
   return { status: 'success' }
 }
 
@@ -82,6 +80,6 @@ export async function updateComboImagePosition(
     return { status: 'error', message: 'Error al actualizar la posición' }
   }
 
-  revalidatePath(`/catalog/combos/${comboId}/images`)
+  revalidateTag('combos', 'default')
   return { status: 'success' }
 }

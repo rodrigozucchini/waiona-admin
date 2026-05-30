@@ -171,7 +171,7 @@ export function ProductPricingClient({ products, pricings, margins, calculations
                     pricing={pricing}
                     margins={margins}
                     getMarginLabel={getMarginLabel}
-                    breakdown={calculations[product.id] ?? null}
+                    breakdown={calculations[pricing.id] ?? null}
                   />
                 ))
               )}

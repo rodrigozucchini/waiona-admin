@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { api, ApiError } from '@/lib/api'
@@ -40,7 +40,7 @@ export async function createStockLocation(
     return { status: 'error', message: 'Error al crear la ubicación' }
   }
 
-  revalidatePath('/stock/locations')
+  revalidateTag('stock', 'default')
   return { status: 'success' }
 }
 
@@ -59,7 +59,7 @@ export async function updateStockLocation(
     return { status: 'error', message: 'Error al actualizar' }
   }
 
-  revalidatePath('/stock/locations')
+  revalidateTag('stock', 'default')
   return { status: 'success' }
 }
 
@@ -71,7 +71,7 @@ export async function deleteStockLocation(id: number): Promise<StockActionState>
     return { status: 'error', message: 'Error al eliminar' }
   }
 
-  revalidatePath('/stock/locations')
+  revalidateTag('stock', 'default')
   return { status: 'success' }
 }
 
@@ -103,7 +103,7 @@ export async function createStockItem(
     return { status: 'error', message: 'Error al crear el ítem de stock' }
   }
 
-  revalidatePath('/stock/items')
+  revalidateTag('stock', 'default')
   redirect(`/stock/items/${newItem.id}`)
 }
 
@@ -124,7 +124,7 @@ export async function addStock(
     return { status: 'error', message: 'Error al agregar stock' }
   }
 
-  revalidatePath('/stock/items')
+  revalidateTag('stock', 'default')
   return { status: 'success' }
 }
 
@@ -144,7 +144,7 @@ export async function writeOff(
     return { status: 'error', message: 'Error al registrar la baja' }
   }
 
-  revalidatePath('/stock/items')
+  revalidateTag('stock', 'default')
   return { status: 'success' }
 }
 
@@ -179,8 +179,7 @@ export async function writeOffDamage(
     return { status: 'error', message: 'Error al registrar la baja por daño' }
   }
 
-  revalidatePath('/stock/items')
-  revalidatePath('/stock/write-offs')
+  revalidateTag('stock', 'default')
   return { status: 'success' }
 }
 
@@ -203,6 +202,6 @@ export async function updateThresholds(
     return { status: 'error', message: 'Error al actualizar umbrales' }
   }
 
-  revalidatePath(`/stock/items/${stockItemId}`)
+  revalidateTag('stock', 'default')
   return { status: 'success' }
 }

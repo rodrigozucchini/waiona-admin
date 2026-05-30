@@ -1,7 +1,8 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { z } from 'zod'
 import { api, ApiError } from '@/lib/api'
 
 export type PromotionActionState =
@@ -9,22 +10,45 @@ export type PromotionActionState =
   | { status: 'error'; message: string }
   | { status: 'success' }
 
+// ─── Schemas ──────────────────────────────────────────────────────────────────
+
+const CouponSchema = z.object({
+  code: z.string().min(1, 'El código es requerido').max(100),
+  value: z.coerce.number().min(0.01, 'El valor debe ser mayor a 0').max(100, 'El porcentaje no puede superar 100'),
+  isGlobal: z.enum(['true', 'false']).transform((v) => v === 'true'),
+  usageLimit: z.coerce.number().int().positive().optional(),
+  startsAt: z.string().optional(),
+  endsAt: z.string().optional(),
+})
+
+const DiscountSchema = z.object({
+  name: z.string().min(1, 'El nombre es requerido').max(255),
+  description: z.string().max(1000).optional(),
+  value: z.coerce.number().min(0.01, 'El valor debe ser mayor a 0').max(100, 'El porcentaje no puede superar 100'),
+  startsAt: z.string().optional(),
+  endsAt: z.string().optional(),
+})
+
 // ─── Coupons ──────────────────────────────────────────────────────────────────
 
 export async function createCoupon(
   _prev: PromotionActionState,
   formData: FormData,
 ): Promise<PromotionActionState> {
-  const code = (formData.get('code') as string).toUpperCase().trim()
-  const value = Number(formData.get('value'))
-  const isGlobal = formData.get('isGlobal') === 'true'
-  const usageLimitRaw = formData.get('usageLimit') as string
-  const startsAtRaw = formData.get('startsAt') as string
-  const endsAtRaw = formData.get('endsAt') as string
+  const result = CouponSchema.safeParse({
+    code: (formData.get('code') as string)?.toUpperCase().trim(),
+    value: formData.get('value'),
+    isGlobal: formData.get('isGlobal'),
+    usageLimit: formData.get('usageLimit') || undefined,
+    startsAt: formData.get('startsAt') || undefined,
+    endsAt: formData.get('endsAt') || undefined,
+  })
 
-  if (!code) return { status: 'error', message: 'El código es requerido' }
-  if (!value || value <= 0) return { status: 'error', message: 'El valor debe ser mayor a 0' }
-  if (value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
+  if (!result.success) {
+    return { status: 'error', message: result.error.issues[0]?.message ?? 'Datos inválidos' }
+  }
+
+  const { code, value, isGlobal, usageLimit, startsAt, endsAt } = result.data
 
   let couponId: number
   try {
@@ -32,9 +56,9 @@ export async function createCoupon(
       code,
       value,
       isGlobal,
-      usageLimit: usageLimitRaw ? Number(usageLimitRaw) : undefined,
-      startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : undefined,
-      endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : undefined,
+      usageLimit,
+      startsAt: startsAt ? new Date(startsAt).toISOString() : undefined,
+      endsAt: endsAt ? new Date(endsAt).toISOString() : undefined,
     })
     couponId = coupon.id
   } catch (err) {
@@ -45,7 +69,7 @@ export async function createCoupon(
     return { status: 'error', message: 'Error al crear el cupón' }
   }
 
-  revalidatePath('/promotions/coupons')
+  revalidateTag('coupons', 'default')
   redirect(`/promotions/coupons/${couponId}`)
 }
 
@@ -56,7 +80,7 @@ export async function deleteCoupon(id: number): Promise<PromotionActionState> {
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al eliminar el cupón' }
   }
-  revalidatePath('/promotions/coupons')
+  revalidateTag('coupons', 'default')
   redirect('/promotions/coupons')
 }
 
@@ -67,7 +91,7 @@ export async function addCouponProductTarget(couponId: number, productId: number
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al asignar producto' }
   }
-  revalidatePath(`/promotions/coupons/${couponId}`)
+  revalidateTag('coupons', 'default')
   return { status: 'success' }
 }
 
@@ -78,7 +102,7 @@ export async function removeCouponProductTarget(couponId: number, productId: num
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al remover producto' }
   }
-  revalidatePath(`/promotions/coupons/${couponId}`)
+  revalidateTag('coupons', 'default')
   return { status: 'success' }
 }
 
@@ -89,7 +113,7 @@ export async function addCouponComboTarget(couponId: number, comboId: number): P
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al asignar combo' }
   }
-  revalidatePath(`/promotions/coupons/${couponId}`)
+  revalidateTag('coupons', 'default')
   return { status: 'success' }
 }
 
@@ -100,7 +124,7 @@ export async function removeCouponComboTarget(couponId: number, comboId: number)
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al remover combo' }
   }
-  revalidatePath(`/promotions/coupons/${couponId}`)
+  revalidateTag('coupons', 'default')
   return { status: 'success' }
 }
 
@@ -110,24 +134,28 @@ export async function createDiscount(
   _prev: PromotionActionState,
   formData: FormData,
 ): Promise<PromotionActionState> {
-  const name = (formData.get('name') as string).trim()
-  const description = formData.get('description') as string
-  const value = Number(formData.get('value'))
-  const startsAtRaw = formData.get('startsAt') as string
-  const endsAtRaw = formData.get('endsAt') as string
+  const result = DiscountSchema.safeParse({
+    name: (formData.get('name') as string)?.trim(),
+    description: (formData.get('description') as string)?.trim() || undefined,
+    value: formData.get('value'),
+    startsAt: formData.get('startsAt') || undefined,
+    endsAt: formData.get('endsAt') || undefined,
+  })
 
-  if (!name) return { status: 'error', message: 'El nombre es requerido' }
-  if (!value || value <= 0) return { status: 'error', message: 'El valor debe ser mayor a 0' }
-  if (value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
+  if (!result.success) {
+    return { status: 'error', message: result.error.issues[0]?.message ?? 'Datos inválidos' }
+  }
+
+  const { name, description, value, startsAt, endsAt } = result.data
 
   let discountId: number
   try {
     const discount = await api.post<{ id: number }>('/discounts', {
       name,
-      description: description || undefined,
+      description,
       value,
-      startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : undefined,
-      endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : undefined,
+      startsAt: startsAt ? new Date(startsAt).toISOString() : undefined,
+      endsAt: endsAt ? new Date(endsAt).toISOString() : undefined,
     })
     discountId = discount.id
   } catch (err) {
@@ -135,7 +163,7 @@ export async function createDiscount(
     return { status: 'error', message: 'Error al crear el descuento' }
   }
 
-  revalidatePath('/promotions/discounts')
+  revalidateTag('discounts', 'default')
   redirect(`/promotions/discounts/${discountId}`)
 }
 
@@ -144,30 +172,34 @@ export async function updateDiscount(
   _prev: PromotionActionState,
   formData: FormData,
 ): Promise<PromotionActionState> {
-  const name = (formData.get('name') as string).trim()
-  const description = formData.get('description') as string
-  const value = Number(formData.get('value'))
-  const startsAtRaw = formData.get('startsAt') as string
-  const endsAtRaw = formData.get('endsAt') as string
+  const result = DiscountSchema.safeParse({
+    name: (formData.get('name') as string)?.trim(),
+    description: (formData.get('description') as string)?.trim() || undefined,
+    value: formData.get('value'),
+    startsAt: formData.get('startsAt') || undefined,
+    endsAt: formData.get('endsAt') || undefined,
+  })
 
-  if (!name) return { status: 'error', message: 'El nombre es requerido' }
-  if (!value || value <= 0) return { status: 'error', message: 'El valor debe ser mayor a 0' }
-  if (value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
+  if (!result.success) {
+    return { status: 'error', message: result.error.issues[0]?.message ?? 'Datos inválidos' }
+  }
+
+  const { name, description, value, startsAt, endsAt } = result.data
 
   try {
     await api.patch(`/discounts/${id}`, {
       name,
-      description: description || undefined,
+      description,
       value,
-      startsAt: startsAtRaw ? new Date(startsAtRaw).toISOString() : undefined,
-      endsAt: endsAtRaw ? new Date(endsAtRaw).toISOString() : undefined,
+      startsAt: startsAt ? new Date(startsAt).toISOString() : undefined,
+      endsAt: endsAt ? new Date(endsAt).toISOString() : undefined,
     })
   } catch (err) {
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al actualizar el descuento' }
   }
-  revalidatePath(`/promotions/discounts/${id}`)
-  revalidatePath('/promotions/discounts')
+
+  revalidateTag('discounts', 'default')
   return { status: 'success' }
 }
 
@@ -178,7 +210,7 @@ export async function deleteDiscount(id: number): Promise<PromotionActionState> 
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al eliminar el descuento' }
   }
-  revalidatePath('/promotions/discounts')
+  revalidateTag('discounts', 'default')
   redirect('/promotions/discounts')
 }
 
@@ -192,7 +224,7 @@ export async function addDiscountProductTarget(discountId: number, productId: nu
     }
     return { status: 'error', message: 'Error al asignar producto' }
   }
-  revalidatePath(`/promotions/discounts/${discountId}`)
+  revalidateTag('discounts', 'default')
   return { status: 'success' }
 }
 
@@ -203,7 +235,7 @@ export async function removeDiscountProductTarget(discountId: number, productId:
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al remover producto' }
   }
-  revalidatePath(`/promotions/discounts/${discountId}`)
+  revalidateTag('discounts', 'default')
   return { status: 'success' }
 }
 
@@ -217,7 +249,7 @@ export async function addDiscountComboTarget(discountId: number, comboId: number
     }
     return { status: 'error', message: 'Error al asignar combo' }
   }
-  revalidatePath(`/promotions/discounts/${discountId}`)
+  revalidateTag('discounts', 'default')
   return { status: 'success' }
 }
 
@@ -228,6 +260,6 @@ export async function removeDiscountComboTarget(discountId: number, comboId: num
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al remover combo' }
   }
-  revalidatePath(`/promotions/discounts/${discountId}`)
+  revalidateTag('discounts', 'default')
   return { status: 'success' }
 }

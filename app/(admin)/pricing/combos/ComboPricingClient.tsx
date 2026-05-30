@@ -171,7 +171,7 @@ export function ComboPricingClient({ combos, pricings, margins, calculations }: 
                     pricing={pricing}
                     margins={margins}
                     getMarginLabel={getMarginLabel}
-                    breakdown={calculations[combo.id] ?? null}
+                    breakdown={calculations[pricing.id] ?? null}
                   />
                 ))
               )}

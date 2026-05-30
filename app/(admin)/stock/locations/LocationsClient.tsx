@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useState, useTransition } from 'react'
+import { useActionState, useState, useTransition, useEffect } from 'react'
+import { toast } from 'sonner'
 import type { StockLocation, StockLocationType } from '@/types'
 import {
   createStockLocation,
@@ -18,6 +19,10 @@ const LOCATION_TYPES: { value: StockLocationType; label: string }[] = [
 export function LocationsClient({ locations }: { locations: StockLocation[] }) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [createState, createAction, isCreating] = useActionState(createStockLocation, { status: 'idle' })
+
+  useEffect(() => {
+    if (createState.status === 'success') toast.success('Ubicación creada')
+  }, [createState.status])
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -93,9 +98,6 @@ export function LocationsClient({ locations }: { locations: StockLocation[] }) {
         {createState.status === 'error' && (
           <p role="alert" className="mt-2 text-xs text-destructive">{createState.message}</p>
         )}
-        {createState.status === 'success' && (
-          <p className="mt-2 text-xs text-green-600">Ubicación creada.</p>
-        )}
       </div>
     </div>
   )
@@ -116,6 +118,13 @@ function LocationRow({
   const [updateState, updateAction, isUpdating] = useActionState(updateWithId, { status: 'idle' })
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    if (updateState.status === 'success') {
+      toast.success('Ubicación actualizada')
+      onCancel()
+    }
+  }, [updateState.status])
 
   function handleDelete() {
     if (!confirm(`¿Eliminar la ubicación "${location.name}"?`)) return
@@ -157,7 +166,6 @@ function LocationRow({
           {updateState.status === 'error' && (
             <p className="mt-1 text-xs text-destructive">{updateState.message}</p>
           )}
-          {updateState.status === 'success' && (onCancel(), null)}
         </td>
       </tr>
     )
