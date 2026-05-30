@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import type { Margin } from '@/types'
 import {
   createMargin,
@@ -12,6 +13,10 @@ import {
 export function MarginsClient({ margins }: { margins: Margin[] }) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [createState, createAction, isCreating] = useActionState(createMargin, { status: 'idle' })
+
+  useEffect(() => {
+    if (createState.status === 'success') toast.success('Margen creado')
+  }, [createState.status])
 
   return (
     <div className="space-y-6 max-w-xl">
@@ -82,9 +87,6 @@ export function MarginsClient({ margins }: { margins: Margin[] }) {
         {createState.status === 'error' && (
           <p role="alert" className="mt-2 text-xs text-destructive">{createState.message}</p>
         )}
-        {createState.status === 'success' && (
-          <p className="mt-2 text-xs text-green-600">Margen creado.</p>
-        )}
       </div>
     </div>
   )
@@ -105,6 +107,13 @@ function MarginRow({
   const [updateState, updateAction, isUpdating] = useActionState(updateWithId, { status: 'idle' })
   const [deleteState, setDeleteState] = useState<{ error?: string } | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  useEffect(() => {
+    if (updateState.status === 'success') {
+      toast.success('Margen actualizado')
+      onCancel()
+    }
+  }, [updateState.status])
 
   async function handleDelete() {
     if (!confirm(`¿Eliminar el margen "${margin.name}"?`)) return
@@ -159,7 +168,6 @@ function MarginRow({
           {updateState.status === 'error' && (
             <p className="mt-1 text-xs text-destructive">{updateState.message}</p>
           )}
-          {updateState.status === 'success' && (onCancel(), null)}
         </td>
       </tr>
     )

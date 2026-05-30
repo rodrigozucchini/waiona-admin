@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition, useState } from 'react'
+import { toast } from 'sonner'
 import type { CouponProductTarget, CouponComboTarget, Product, Combo } from '@/types'
 import {
   addCouponProductTarget,
@@ -36,11 +37,12 @@ export function CouponTargetsClient({
   const availableProducts = allProducts.filter((p) => !targetProductIds.has(p.id))
   const availableCombos = allCombos.filter((c) => !targetComboIds.has(c.id))
 
-  function run(fn: () => Promise<{ status: string; message?: string }>) {
+  function run(fn: () => Promise<{ status: string; message?: string }>, successMsg = 'Guardado') {
     setError(null)
     startTransition(async () => {
       const result = await fn()
       if (result.status === 'error') setError(result.message ?? 'Error')
+      else toast.success(successMsg)
     })
   }
 

@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 import { cookies } from 'next/headers'
 import { api, ApiError } from '@/lib/api'
 import type { ProductImage } from '@/types'
@@ -46,8 +46,7 @@ export async function uploadProductImage(
     return { status: 'error', message: err.message }
   }
 
-  revalidatePath(`/catalog/products/${productId}`)
-  revalidatePath(`/catalog/products/${productId}/images`)
+  revalidateTag('products', 'default')
   return { status: 'success' }
 }
 
@@ -62,8 +61,7 @@ export async function deleteProductImage(
     return { status: 'error', message: 'Error al eliminar la imagen' }
   }
 
-  revalidatePath(`/catalog/products/${productId}`)
-  revalidatePath(`/catalog/products/${productId}/images`)
+  revalidateTag('products', 'default')
   return { status: 'success' }
 }
 
@@ -83,6 +81,6 @@ export async function updateImagePosition(
     return { status: 'error', message: 'Error al actualizar la posición' }
   }
 
-  revalidatePath(`/catalog/products/${productId}/images`)
+  revalidateTag('products', 'default')
   return { status: 'success' }
 }

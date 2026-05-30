@@ -2,6 +2,7 @@ import { api } from '@/lib/api'
 import Link from 'next/link'
 import type { PaginatedResponse, Order, OrderStatus } from '@/types'
 import { formatDate, formatCurrency } from '@/lib/utils'
+import { OrdersFilters } from './OrdersFilters'
 
 const statusConfig: Record<OrderStatus, { label: string; className: string }> = {
   pending:    { label: 'Pendiente',   className: 'bg-yellow-100 text-yellow-700' },
@@ -14,19 +15,25 @@ const statusConfig: Record<OrderStatus, { label: string; className: string }> = 
 export default async function OrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; status?: string }>
 }) {
-  const { page = '1' } = await searchParams
+  const { page = '1', status } = await searchParams
 
-  const result = await api.get<PaginatedResponse<Order>>(`/orders?page=${page}&limit=20`)
+  const query = new URLSearchParams({ page, limit: '20' })
+  if (status) query.set('status', status)
+
+  const result = await api.get<PaginatedResponse<Order>>(`/orders?${query}`)
   const { data: orders, total, totalPages } = result
   const currentPage = Number(page)
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Órdenes</h1>
-        <p className="text-sm text-muted-foreground">{total} orden{total !== 1 ? 'es' : ''} en total.</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Órdenes</h1>
+          <p className="text-sm text-muted-foreground">{total} orden{total !== 1 ? 'es' : ''} en total.</p>
+        </div>
+        <OrdersFilters currentStatus={status} />
       </div>
 
       {orders.length === 0 ? (
@@ -88,13 +95,19 @@ export default async function OrdersPage({
           <span className="text-muted-foreground">{total} órdenes</span>
           <div className="flex gap-2">
             {currentPage > 1 && (
-              <Link href={`/orders?page=${currentPage - 1}`} className="rounded-md border px-3 py-1.5 hover:bg-muted">
+              <Link
+                href={`/orders?page=${currentPage - 1}${status ? `&status=${status}` : ''}`}
+                className="rounded-md border px-3 py-1.5 hover:bg-muted"
+              >
                 Anterior
               </Link>
             )}
             <span className="px-3 py-1.5 text-muted-foreground">{currentPage} / {totalPages}</span>
             {currentPage < totalPages && (
-              <Link href={`/orders?page=${currentPage + 1}`} className="rounded-md border px-3 py-1.5 hover:bg-muted">
+              <Link
+                href={`/orders?page=${currentPage + 1}${status ? `&status=${status}` : ''}`}
+                className="rounded-md border px-3 py-1.5 hover:bg-muted"
+              >
                 Siguiente
               </Link>
             )}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import type { StockItem, StockWriteoffReason } from '@/types'
 import { addStock, writeOff, writeOffDamage, updateThresholds } from '@/actions/stock'
 
@@ -30,16 +31,20 @@ export function StockItemClient({ item }: { item: StockItem }) {
   const [thresholdState, thresholdFormAction, isThresholdPending] = useActionState(updateThresholdsAction, { status: 'idle' })
 
   useEffect(() => {
-    if (addState.status === 'success') setPanel(null)
+    if (addState.status === 'success') { toast.success('Stock ingresado'); setPanel(null) }
   }, [addState.status])
 
   useEffect(() => {
-    if (writeOffState.status === 'success') setPanel(null)
+    if (writeOffState.status === 'success') { toast.success('Baja registrada'); setPanel(null) }
   }, [writeOffState.status])
 
   useEffect(() => {
-    if (damageState.status === 'success') setPanel(null)
+    if (damageState.status === 'success') { toast.success('Baja por daño registrada'); setPanel(null) }
   }, [damageState.status])
+
+  useEffect(() => {
+    if (thresholdState.status === 'success') { toast.success('Umbrales actualizados'); setPanel(null) }
+  }, [thresholdState.status])
 
   return (
     <div className="rounded-lg border p-4 space-y-4">

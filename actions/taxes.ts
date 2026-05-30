@@ -1,7 +1,8 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { z } from 'zod'
 import { api, ApiError } from '@/lib/api'
 import type { TaxType, Tax } from '@/types'
 
@@ -10,20 +11,38 @@ export type TaxActionState =
   | { status: 'error'; message: string }
   | { status: 'success' }
 
+// ─── Schemas ──────────────────────────────────────────────────────────────────
+
+const TaxTypeSchema = z.object({
+  code: z.string().min(1, 'El código es requerido').max(20),
+  name: z.string().min(1, 'El nombre es requerido').max(100),
+})
+
+const TaxSchema = z.object({
+  value: z.coerce
+    .number()
+    .min(0.01, 'El valor mínimo es 0.01')
+    .max(100, 'El porcentaje no puede superar 100'),
+  isGlobal: z.enum(['true', 'false']).transform((v) => v === 'true'),
+})
+
 // ─── Tax Types ────────────────────────────────────────────────────────────────
 
 export async function createTaxType(
   _prev: TaxActionState,
   formData: FormData
 ): Promise<TaxActionState> {
-  const code = (formData.get('code') as string).trim().toUpperCase()
-  const name = (formData.get('name') as string).trim()
+  const result = TaxTypeSchema.safeParse({
+    code: (formData.get('code') as string)?.trim().toUpperCase(),
+    name: (formData.get('name') as string)?.trim(),
+  })
 
-  if (!code) return { status: 'error', message: 'El código es requerido' }
-  if (!name) return { status: 'error', message: 'El nombre es requerido' }
+  if (!result.success) {
+    return { status: 'error', message: result.error.issues[0]?.message ?? 'Datos inválidos' }
+  }
 
   try {
-    await api.post<TaxType>('/tax-types', { code, name })
+    await api.post<TaxType>('/tax-types', result.data)
   } catch (err) {
     if (err instanceof ApiError) {
       if (err.status === 400) return { status: 'error', message: 'Ya existe un tipo de impuesto con ese código' }
@@ -32,7 +51,7 @@ export async function createTaxType(
     return { status: 'error', message: 'Error al crear el tipo de impuesto' }
   }
 
-  revalidatePath('/taxes')
+  revalidateTag('taxes', 'default')
   return { status: 'success' }
 }
 
@@ -44,7 +63,7 @@ export async function deleteTaxType(id: number): Promise<TaxActionState> {
     return { status: 'error', message: 'Error al eliminar el tipo de impuesto' }
   }
 
-  revalidatePath('/taxes')
+  revalidateTag('taxes', 'default')
   redirect('/taxes')
 }
 
@@ -55,20 +74,23 @@ export async function createTax(
   _prev: TaxActionState,
   formData: FormData
 ): Promise<TaxActionState> {
-  const value = Number(formData.get('value'))
-  const isGlobal = formData.get('isGlobal') === 'true'
+  const result = TaxSchema.safeParse({
+    value: formData.get('value'),
+    isGlobal: formData.get('isGlobal'),
+  })
 
-  if (isNaN(value) || value < 0.01) return { status: 'error', message: 'El valor mínimo es 0.01' }
-  if (value > 100) return { status: 'error', message: 'El porcentaje no puede superar 100' }
+  if (!result.success) {
+    return { status: 'error', message: result.error.issues[0]?.message ?? 'Datos inválidos' }
+  }
 
   try {
-    await api.post<Tax>(`/tax-types/${taxTypeId}/taxes`, { value, isGlobal })
+    await api.post<Tax>(`/tax-types/${taxTypeId}/taxes`, result.data)
   } catch (err) {
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al crear el impuesto' }
   }
 
-  revalidatePath(`/taxes/${taxTypeId}`)
+  revalidateTag('taxes', 'default')
   return { status: 'success' }
 }
 
@@ -80,7 +102,7 @@ export async function deleteTax(taxTypeId: number, taxId: number): Promise<TaxAc
     return { status: 'error', message: 'Error al eliminar el impuesto' }
   }
 
-  revalidatePath(`/taxes/${taxTypeId}`)
+  revalidateTag('taxes', 'default')
   return { status: 'success' }
 }
 
@@ -91,8 +113,7 @@ export async function assignTaxToProduct(productId: number, taxId: number): Prom
     await api.post(`/products/${productId}/taxes`, { taxId })
   } catch (err) {
     if (err instanceof ApiError) {
-      const msg = err.message.toLowerCase()
-      if (msg.includes('global')) {
+      if (err.message.toLowerCase().includes('global')) {
         return { status: 'error', message: 'Este impuesto es global y ya aplica a todos los productos' }
       }
       return { status: 'error', message: err.message }
@@ -100,7 +121,7 @@ export async function assignTaxToProduct(productId: number, taxId: number): Prom
     return { status: 'error', message: 'Error al asignar el impuesto' }
   }
 
-  revalidatePath('/taxes')
+  revalidateTag('taxes', 'default')
   return { status: 'success' }
 }
 
@@ -112,6 +133,6 @@ export async function removeTaxFromProduct(productId: number, assignmentId: numb
     return { status: 'error', message: 'Error al quitar el impuesto' }
   }
 
-  revalidatePath('/taxes')
+  revalidateTag('taxes', 'default')
   return { status: 'success' }
 }

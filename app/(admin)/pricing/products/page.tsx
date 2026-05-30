@@ -19,7 +19,7 @@ export default async function ProductPricingPage() {
   const calculations: Record<number, PriceBreakdown> = {}
   pricingsResult.data.forEach((p, i) => {
     const r = calcResults[i]
-    if (r.status === 'fulfilled') calculations[p.productId] = r.value
+    if (r.status === 'fulfilled') calculations[p.id] = r.value
   })
 
   return (

@@ -24,7 +24,7 @@ const paymentStatusConfig: Record<string, { label: string; className: string }> 
 const nextStatuses: Record<OrderStatus, OrderStatus[]> = {
   pending:    ['confirmed', 'cancelled'],
   confirmed:  ['dispatched', 'cancelled'],
-  dispatched: ['delivered', 'cancelled'],
+  dispatched: ['delivered'],
   delivered:  [],
   cancelled:  [],
 }

@@ -18,7 +18,7 @@ export default async function ComboPricingPage() {
   const calculations: Record<number, PriceBreakdown> = {}
   pricingsResult.data.forEach((p, i) => {
     const r = calcResults[i]
-    if (r.status === 'fulfilled') calculations[p.comboId] = r.value
+    if (r.status === 'fulfilled') calculations[p.id] = r.value
   })
 
   return (

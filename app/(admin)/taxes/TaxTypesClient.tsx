@@ -1,13 +1,17 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useTransition, useEffect } from 'react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import type { TaxType } from '@/types'
-import { createTaxType, deleteTaxType, type TaxActionState } from '@/actions/taxes'
-import { useTransition } from 'react'
+import { createTaxType, deleteTaxType } from '@/actions/taxes'
 
 export function TaxTypesClient({ taxTypes }: { taxTypes: TaxType[] }) {
   const [createState, createAction, isCreating] = useActionState(createTaxType, { status: 'idle' })
+
+  useEffect(() => {
+    if (createState.status === 'success') toast.success('Tipo de impuesto creado')
+  }, [createState.status])
 
   return (
     <div className="space-y-6 max-w-xl">
@@ -63,9 +67,6 @@ export function TaxTypesClient({ taxTypes }: { taxTypes: TaxType[] }) {
         </form>
         {createState.status === 'error' && (
           <p role="alert" className="mt-2 text-xs text-destructive">{createState.message}</p>
-        )}
-        {createState.status === 'success' && (
-          <p className="mt-2 text-xs text-green-600">Tipo de impuesto creado.</p>
         )}
       </div>
     </div>

@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useTransition, useState } from 'react'
+import { useActionState, useTransition, useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import type { Tax, Product } from '@/types'
 import {
   createTax,
@@ -21,6 +22,10 @@ const INPUT_CLASS =
 export function TaxRatesClient({ taxTypeId, taxes, products }: Props) {
   const createWithId = createTax.bind(null, taxTypeId)
   const [createState, createAction, isCreating] = useActionState(createWithId, { status: 'idle' })
+
+  useEffect(() => {
+    if (createState.status === 'success') toast.success('Tasa creada')
+  }, [createState.status])
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -86,9 +91,6 @@ export function TaxRatesClient({ taxTypeId, taxes, products }: Props) {
         {createState.status === 'error' && (
           <p role="alert" className="mt-3 text-xs text-destructive">{createState.message}</p>
         )}
-        {createState.status === 'success' && (
-          <p className="mt-3 text-xs text-green-600">Tasa creada correctamente.</p>
-        )}
       </div>
     </div>
   )
@@ -105,7 +107,6 @@ function TaxRateRow({
 }) {
   const [showAssign, setShowAssign] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const [assignFeedback, setAssignFeedback] = useState<{ ok: boolean; msg: string } | null>(null)
 
   function handleDelete() {
     if (!confirm(`¿Eliminar la tasa ${tax.value}%?`)) return
@@ -117,11 +118,8 @@ function TaxRateRow({
   async function handleAssignProduct(productId: number) {
     startTransition(async () => {
       const result = await assignTaxToProduct(productId, tax.id)
-      setAssignFeedback(
-        result.status === 'error'
-          ? { ok: false, msg: result.message }
-          : { ok: true, msg: 'Asignado al producto.' }
-      )
+      if (result.status === 'error') toast.error(result.message)
+      else toast.success('Impuesto asignado al producto')
     })
   }
 
@@ -144,7 +142,7 @@ function TaxRateRow({
         <div className="flex items-center gap-3">
           {!tax.isGlobal && (
             <button
-              onClick={() => { setShowAssign((v) => !v); setAssignFeedback(null) }}
+              onClick={() => setShowAssign((v) => !v)}
               className="text-sm text-primary hover:underline"
             >
               {showAssign ? 'Cerrar' : 'Asignar'}
@@ -177,11 +175,6 @@ function TaxRateRow({
             onAssign={handleAssignProduct}
             isPending={isPending}
           />
-          {assignFeedback && (
-            <p className={`text-xs ${assignFeedback.ok ? 'text-green-600' : 'text-destructive'}`}>
-              {assignFeedback.msg}
-            </p>
-          )}
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 import { api, ApiError } from '@/lib/api'
 import type { OrderStatus } from '@/types'
 
@@ -24,7 +24,6 @@ export async function updateOrderStatus(
     return { status: 'error', message: 'Error al actualizar el estado' }
   }
 
-  revalidatePath(`/orders/${orderId}`)
-  revalidatePath('/orders')
+  revalidateTag('orders', 'default')
   return { status: 'success' }
 }

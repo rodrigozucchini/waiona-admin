@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
+import { toast } from 'sonner'
 import type { OrderStatus } from '@/types'
 import { updateOrderStatus } from '@/actions/orders'
 
@@ -22,6 +23,10 @@ export function OrderStatusClient({ orderId, currentStatus, allowedStatuses }: P
   const updateWithId = updateOrderStatus.bind(null, orderId)
   const [state, formAction, isPending] = useActionState(updateWithId, { status: 'idle' })
 
+  useEffect(() => {
+    if (state.status === 'success') toast.success('Estado actualizado')
+  }, [state.status])
+
   return (
     <div className="rounded-lg border p-4 space-y-3">
       <h2 className="font-medium text-sm">Cambiar estado</h2>
@@ -39,9 +44,6 @@ export function OrderStatusClient({ orderId, currentStatus, allowedStatuses }: P
         </select>
         {state.status === 'error' && (
           <p role="alert" className="text-xs text-destructive">{state.message}</p>
-        )}
-        {state.status === 'success' && (
-          <p className="text-xs text-green-600">Estado actualizado.</p>
         )}
         <button
           type="submit"

@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useTransition, useState } from 'react'
+import { useActionState, useTransition, useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import type { Discount, DiscountProductTarget, DiscountComboTarget, Product, Combo } from '@/types'
 import {
   updateDiscount,
@@ -30,6 +31,10 @@ export function DiscountDetailClient({
   const [updateState, updateAction, isUpdating] = useActionState(updateWithId, { status: 'idle' })
   const [isPending, startTransition] = useTransition()
   const [targetError, setTargetError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (updateState.status === 'success') toast.success('Descuento actualizado')
+  }, [updateState.status])
   const [selectedProductId, setSelectedProductId] = useState('')
   const [selectedComboId, setSelectedComboId] = useState('')
 
@@ -38,11 +43,12 @@ export function DiscountDetailClient({
   const availableProducts = allProducts.filter((p) => !targetProductIds.has(p.id))
   const availableCombos = allCombos.filter((c) => !targetComboIds.has(c.id))
 
-  function run(fn: () => Promise<{ status: string; message?: string }>) {
+  function run(fn: () => Promise<{ status: string; message?: string }>, successMsg = 'Guardado') {
     setTargetError(null)
     startTransition(async () => {
       const result = await fn()
       if (result.status === 'error') setTargetError(result.message ?? 'Error')
+      else toast.success(successMsg)
     })
   }
 
