@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
+import { toast } from 'sonner'
 import type { Product, Category } from '@/types'
 import type { ProductActionState } from '@/actions/products'
 
@@ -25,6 +26,10 @@ interface Props {
 
 export function ProductForm({ action, product, categories }: Props) {
   const [state, formAction, isPending] = useActionState(action, { status: 'idle' })
+
+  useEffect(() => {
+    if (state.status === 'success') toast.success(product ? 'Producto actualizado' : 'Producto creado')
+  }, [state.status, product])
 
   return (
     <form action={formAction} className="space-y-4 max-w-lg">
@@ -150,10 +155,6 @@ export function ProductForm({ action, product, categories }: Props) {
         <p role="alert" className="text-sm text-destructive">
           {state.message}
         </p>
-      )}
-
-      {state.status === 'success' && (
-        <p className="text-sm text-green-600">Cambios guardados.</p>
       )}
 
       <div className="flex gap-3">

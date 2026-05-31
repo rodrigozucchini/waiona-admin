@@ -1,11 +1,10 @@
-import { api } from '@/lib/api'
 import Link from 'next/link'
 import { CategoryForm } from '@/components/forms/CategoryForm'
 import { createCategory } from '@/actions/categories'
-import type { PaginatedResponse, Category } from '@/types'
+import { getCategories } from '@/lib/cache'
 
 export default async function NewCategoryPage() {
-  const result = await api.get<PaginatedResponse<Category>>('/categories?limit=100')
+  const categories = await getCategories()
 
   return (
     <div className="space-y-6">
@@ -18,7 +17,7 @@ export default async function NewCategoryPage() {
         <h1 className="text-2xl font-semibold">Nueva categoría</h1>
       </div>
 
-      <CategoryForm action={createCategory} categories={result.data} />
+      <CategoryForm action={createCategory} categories={categories} />
     </div>
   )
 }

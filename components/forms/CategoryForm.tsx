@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
+import { toast } from 'sonner'
 import type { Category } from '@/types'
 import type { CategoryActionState } from '@/actions/categories'
 
@@ -12,6 +13,10 @@ interface Props {
 
 export function CategoryForm({ action, category, categories }: Props) {
   const [state, formAction, isPending] = useActionState(action, { status: 'idle' })
+
+  useEffect(() => {
+    if (state.status === 'success') toast.success(category ? 'Categoría actualizada' : 'Categoría creada')
+  }, [state.status, category])
 
   const parentOptions = categories.filter((c) => c.id !== category?.id)
 

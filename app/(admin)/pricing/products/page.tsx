@@ -1,12 +1,13 @@
 import { api } from '@/lib/api'
-import type { PaginatedResponse, Product, Margin, ProductPricing, PriceBreakdown } from '@/types'
+import { getMargins } from '@/lib/cache'
+import type { PaginatedResponse, Product, ProductPricing, PriceBreakdown } from '@/types'
 import { ProductPricingClient } from './ProductPricingClient'
 
 export default async function ProductPricingPage() {
-  const [productsResult, pricingsResult, marginsResult] = await Promise.all([
+  const [productsResult, pricingsResult, margins] = await Promise.all([
     api.get<PaginatedResponse<Product>>('/products?limit=100'),
     api.get<PaginatedResponse<ProductPricing>>('/product-pricing?limit=100'),
-    api.get<PaginatedResponse<Margin>>('/margins?limit=100'),
+    getMargins(),
   ])
 
   // Fetch full price breakdown for every priced product in parallel
@@ -34,7 +35,7 @@ export default async function ProductPricingPage() {
       <ProductPricingClient
         products={productsResult.data}
         pricings={pricingsResult.data}
-        margins={marginsResult.data}
+        margins={margins}
         calculations={calculations}
       />
     </div>
