@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState, useTransition, useEffect } from 'react'
+import { toast } from 'sonner'
 import type { Product, Margin, ProductPricing, PriceBreakdown } from '@/types'
 import {
   createProductPricing,
@@ -25,6 +26,13 @@ export function ProductPricingClient({ products, pricings, margins, calculations
   const [previewUnitPrice, setPreviewUnitPrice] = useState('')
   const [previewMarginId, setPreviewMarginId] = useState('')
   const [preview, setPreview] = useState<PriceBreakdown | null>(null)
+
+  useEffect(() => {
+    if (createState.status === 'success') {
+      toast.success('Precio creado')
+      setShowForm(false)
+    }
+  }, [createState.status])
 
   const pricedProductIds = new Set(pricings.map((p) => p.productId))
   const productsWithoutPricing = products.filter((p) => !pricedProductIds.has(p.id))
@@ -251,9 +259,20 @@ function PricingRow({
   const updateWithId = updateProductPricing.bind(null, pricing.id)
   const [updateState, updateAction, isUpdating] = useActionState(updateWithId, { status: 'idle' })
 
+  useEffect(() => {
+    if (updateState.status === 'success') {
+      toast.success('Precio actualizado')
+      setIsEditing(false)
+    }
+  }, [updateState.status])
+
   function handleDelete() {
     if (!confirm('¿Eliminar este precio?')) return
-    startDeleteTransition(async () => { await deleteProductPricing(pricing.id) })
+    startDeleteTransition(async () => {
+      const result = await deleteProductPricing(pricing.id)
+      if (result && result.status === 'error') toast.error(result.message)
+      else toast.success('Precio eliminado')
+    })
   }
 
   if (isEditing) {

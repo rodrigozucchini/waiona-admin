@@ -1,10 +1,8 @@
-import { api } from '@/lib/api'
-import Link from 'next/link'
-import type { PaginatedResponse, TaxType } from '@/types'
+import { getTaxTypes } from '@/lib/cache'
 import { TaxTypesClient } from './TaxTypesClient'
 
 export default async function TaxesPage() {
-  const result = await api.get<PaginatedResponse<TaxType>>('/tax-types?limit=100')
+  const taxTypes = await getTaxTypes()
 
   return (
     <div className="space-y-6">
@@ -15,7 +13,7 @@ export default async function TaxesPage() {
         </p>
       </div>
 
-      <TaxTypesClient taxTypes={result.data} />
+      <TaxTypesClient taxTypes={taxTypes} />
     </div>
   )
 }

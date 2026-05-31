@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useRef, useTransition, useState } from 'react'
+import { useActionState, useRef, useTransition, useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import type { ProductImage } from '@/types'
 import type { ImageActionState } from '@/actions/product-images'
 
@@ -14,6 +15,11 @@ export function ImageUploadForm({ uploadAction, nextPosition }: UploadFormProps)
   const [selectedFile, setSelectedFile] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    if (state.status === 'success') toast.success('Imagen subida correctamente')
+    if (state.status === 'error') toast.error(state.message)
+  }, [state.status])
 
   const hasFile = !!selectedFile && !isPending
 
@@ -65,13 +71,6 @@ export function ImageUploadForm({ uploadAction, nextPosition }: UploadFormProps)
         )}
       </div>
 
-      {state.status === 'error' && (
-        <p role="alert" className="text-sm text-destructive">{state.message}</p>
-      )}
-      {state.status === 'success' && (
-        <p className="text-sm text-green-600">Imagen subida correctamente.</p>
-      )}
-
       <button
         type="submit"
         disabled={isPending || !selectedFile}
@@ -94,11 +93,16 @@ export function ImageCard({ image, deleteAction, updatePositionAction }: ImageCa
   const boundUpdate = updatePositionAction.bind(null, image.id)
   const [posState, posFormAction, isPendingPos] = useActionState(boundUpdate, { status: 'idle' })
 
+  useEffect(() => {
+    if (posState.status === 'success') toast.success('Posición actualizada')
+  }, [posState.status])
+
   function handleDelete() {
     if (!confirm('¿Eliminar esta imagen? Esta acción no se puede deshacer.')) return
     startDelete(async () => {
       const result = await deleteAction(image.id)
-      if (result.status === 'error') alert(result.message)
+      if (result.status === 'error') toast.error(result.message)
+      else toast.success('Imagen eliminada')
     })
   }
 

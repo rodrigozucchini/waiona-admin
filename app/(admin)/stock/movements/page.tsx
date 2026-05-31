@@ -2,6 +2,7 @@ import { api } from '@/lib/api'
 import Link from 'next/link'
 import type { PaginatedResponse, StockMovement } from '@/types'
 import { formatDate } from '@/lib/utils'
+import { MovementsFilter } from './MovementsFilter'
 
 const operationLabels: Record<string, string> = {
   ENTRY: 'Ingreso',
@@ -14,12 +15,15 @@ const operationLabels: Record<string, string> = {
 export default async function StockMovementsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; operationType?: string }>
 }) {
-  const { page = '1' } = await searchParams
+  const { page = '1', operationType = '' } = await searchParams
+
+  const query = new URLSearchParams({ page, limit: '50' })
+  if (operationType) query.set('operationType', operationType)
 
   const result = await api.get<PaginatedResponse<StockMovement>>(
-    `/stock-movements?page=${page}&limit=50`
+    `/stock-movements?${query}`
   )
 
   const { data: movements, total, totalPages } = result
@@ -27,9 +31,12 @@ export default async function StockMovementsPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Movimientos</h1>
-        <p className="text-sm text-muted-foreground">Auditoría completa de movimientos de stock.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Movimientos</h1>
+          <p className="text-sm text-muted-foreground">Auditoría completa de movimientos de stock.</p>
+        </div>
+        <MovementsFilter current={operationType} />
       </div>
 
       {movements.length === 0 ? (
@@ -85,7 +92,7 @@ export default async function StockMovementsPage({
           <div className="flex gap-2">
             {currentPage > 1 && (
               <Link
-                href={`/stock/movements?page=${currentPage - 1}`}
+                href={`/stock/movements?page=${currentPage - 1}${operationType ? `&operationType=${operationType}` : ''}`}
                 className="rounded-md border px-3 py-1.5 hover:bg-muted"
               >
                 Anterior
@@ -96,7 +103,7 @@ export default async function StockMovementsPage({
             </span>
             {currentPage < totalPages && (
               <Link
-                href={`/stock/movements?page=${currentPage + 1}`}
+                href={`/stock/movements?page=${currentPage + 1}${operationType ? `&operationType=${operationType}` : ''}`}
                 className="rounded-md border px-3 py-1.5 hover:bg-muted"
               >
                 Siguiente

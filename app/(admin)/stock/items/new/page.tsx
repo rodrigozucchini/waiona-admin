@@ -1,12 +1,13 @@
 import { api } from '@/lib/api'
 import Link from 'next/link'
-import type { PaginatedResponse, Product, StockLocation } from '@/types'
+import { getStockLocations } from '@/lib/cache'
+import type { PaginatedResponse, Product } from '@/types'
 import { NewStockItemForm } from './NewStockItemForm'
 
 export default async function NewStockItemPage() {
   const [products, locations] = await Promise.all([
     api.get<PaginatedResponse<Product>>('/products?limit=200'),
-    api.get<PaginatedResponse<StockLocation>>('/stock-locations?limit=100'),
+    getStockLocations(),
   ])
 
   return (
@@ -22,7 +23,7 @@ export default async function NewStockItemPage() {
           Asociá un producto a una ubicación. El stock inicial queda en 0.
         </p>
       </div>
-      <NewStockItemForm products={products.data} locations={locations.data} />
+      <NewStockItemForm products={products.data} locations={locations} />
     </div>
   )
 }

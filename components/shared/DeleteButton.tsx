@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 
 interface ActionResult {
   status: string
@@ -25,7 +26,7 @@ export function DeleteButton({
     startTransition(async () => {
       const result = await action()
       if (result && result.status === 'error' && result.message) {
-        alert(result.message)
+        toast.error(result.message)
       }
     })
   }

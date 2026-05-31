@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState, useTransition, useEffect } from 'react'
+import { toast } from 'sonner'
 import type { Combo, Margin, ComboPricing, PriceBreakdown } from '@/types'
 import {
   createComboPricing,
@@ -25,6 +26,13 @@ export function ComboPricingClient({ combos, pricings, margins, calculations }: 
   const [previewUnitPrice, setPreviewUnitPrice] = useState('')
   const [previewMarginId, setPreviewMarginId] = useState('')
   const [preview, setPreview] = useState<PriceBreakdown | null>(null)
+
+  useEffect(() => {
+    if (createState.status === 'success') {
+      toast.success('Precio creado')
+      setShowForm(false)
+    }
+  }, [createState.status])
 
   const pricedComboIds = new Set(pricings.map((p) => p.comboId))
   const combosWithoutPricing = combos.filter((c) => !pricedComboIds.has(c.id))
@@ -251,9 +259,20 @@ function ComboPricingRow({
   const updateWithId = updateComboPricing.bind(null, pricing.id)
   const [updateState, updateAction, isUpdating] = useActionState(updateWithId, { status: 'idle' })
 
+  useEffect(() => {
+    if (updateState.status === 'success') {
+      toast.success('Precio actualizado')
+      setIsEditing(false)
+    }
+  }, [updateState.status])
+
   function handleDelete() {
     if (!confirm('¿Eliminar este precio?')) return
-    startDeleteTransition(async () => { await deleteComboPricing(pricing.id) })
+    startDeleteTransition(async () => {
+      const result = await deleteComboPricing(pricing.id)
+      if (result && result.status === 'error') toast.error(result.message)
+      else toast.success('Precio eliminado')
+    })
   }
 
   if (isEditing) {

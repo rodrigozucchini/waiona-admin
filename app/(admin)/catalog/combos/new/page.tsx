@@ -2,11 +2,12 @@ import { api } from '@/lib/api'
 import Link from 'next/link'
 import { ComboForm } from '@/components/forms/ComboForm'
 import { createCombo } from '@/actions/combos'
-import type { PaginatedResponse, Category, Product } from '@/types'
+import { getCategories } from '@/lib/cache'
+import type { PaginatedResponse, Product } from '@/types'
 
 export default async function NewComboPage() {
-  const [categoriesResult, productsResult] = await Promise.all([
-    api.get<PaginatedResponse<Category>>('/categories?limit=100'),
+  const [categories, productsResult] = await Promise.all([
+    getCategories(),
     api.get<PaginatedResponse<Product>>('/products?limit=100'),
   ])
 
@@ -23,7 +24,7 @@ export default async function NewComboPage() {
 
       <ComboForm
         action={createCombo}
-        categories={categoriesResult.data}
+        categories={categories}
         products={productsResult.data}
       />
     </div>

@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
+import { toast } from 'sonner'
 import Link from 'next/link'
 import type { Product, StockLocation } from '@/types'
 import { createStockItem } from '@/actions/stock'
@@ -12,6 +13,10 @@ interface Props {
 
 export function NewStockItemForm({ products, locations }: Props) {
   const [state, action, isPending] = useActionState(createStockItem, { status: 'idle' })
+
+  useEffect(() => {
+    if (state.status === 'success') toast.success('Ítem de stock creado')
+  }, [state.status])
 
   return (
     <form action={action} className="space-y-4">

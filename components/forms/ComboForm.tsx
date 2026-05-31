@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import type { Combo, Category, Product, ComboItem } from '@/types'
 import type { ComboActionState } from '@/actions/combos'
 
@@ -13,6 +14,10 @@ interface Props {
 
 export function ComboForm({ action, combo, categories, products }: Props) {
   const [state, formAction, isPending] = useActionState(action, { status: 'idle' })
+
+  useEffect(() => {
+    if (state.status === 'success') toast.success(combo ? 'Combo actualizado' : 'Combo creado')
+  }, [state.status, combo])
   const [items, setItems] = useState<ComboItem[]>(combo?.items ?? [])
   const [selectedProductId, setSelectedProductId] = useState('')
   const [selectedQuantity, setSelectedQuantity] = useState(1)
@@ -171,10 +176,6 @@ export function ComboForm({ action, combo, categories, products }: Props) {
 
       {state.status === 'error' && (
         <p role="alert" className="text-sm text-destructive">{state.message}</p>
-      )}
-
-      {state.status === 'success' && (
-        <p className="text-sm text-green-600">Cambios guardados.</p>
       )}
 
       <div className="flex gap-3">

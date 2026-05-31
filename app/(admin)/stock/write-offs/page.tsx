@@ -2,6 +2,7 @@ import { api } from '@/lib/api'
 import Link from 'next/link'
 import type { PaginatedResponse, StockWriteOff } from '@/types'
 import { formatDate } from '@/lib/utils'
+import { WriteOffsFilter } from './WriteOffsFilter'
 
 const reasonLabels: Record<string, string> = {
   DAMAGED: 'Daño físico',
@@ -16,12 +17,15 @@ const reasonLabels: Record<string, string> = {
 export default async function StockWriteOffsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; reason?: string }>
 }) {
-  const { page = '1' } = await searchParams
+  const { page = '1', reason = '' } = await searchParams
+
+  const query = new URLSearchParams({ page, limit: '50' })
+  if (reason) query.set('reason', reason)
 
   const result = await api.get<PaginatedResponse<StockWriteOff>>(
-    `/stock-write-offs?page=${page}&limit=50`
+    `/stock-write-offs?${query}`
   )
 
   const { data: writeOffs, total, totalPages } = result
@@ -29,9 +33,12 @@ export default async function StockWriteOffsPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Bajas</h1>
-        <p className="text-sm text-muted-foreground">Registro de bajas de inventario.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Bajas</h1>
+          <p className="text-sm text-muted-foreground">Registro de bajas de inventario.</p>
+        </div>
+        <WriteOffsFilter current={reason} />
       </div>
 
       {writeOffs.length === 0 ? (
@@ -84,7 +91,7 @@ export default async function StockWriteOffsPage({
           <div className="flex gap-2">
             {currentPage > 1 && (
               <Link
-                href={`/stock/write-offs?page=${currentPage - 1}`}
+                href={`/stock/write-offs?page=${currentPage - 1}${reason ? `&reason=${reason}` : ''}`}
                 className="rounded-md border px-3 py-1.5 hover:bg-muted"
               >
                 Anterior
@@ -95,7 +102,7 @@ export default async function StockWriteOffsPage({
             </span>
             {currentPage < totalPages && (
               <Link
-                href={`/stock/write-offs?page=${currentPage + 1}`}
+                href={`/stock/write-offs?page=${currentPage + 1}${reason ? `&reason=${reason}` : ''}`}
                 className="rounded-md border px-3 py-1.5 hover:bg-muted"
               >
                 Siguiente
