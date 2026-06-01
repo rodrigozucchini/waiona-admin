@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState, useEffect } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import type { Combo, Category, Product, ComboItem } from '@/types'
 import type { ComboActionState } from '@/actions/combos'
@@ -186,9 +187,9 @@ export function ComboForm({ action, combo, categories, products }: Props) {
         >
           {isPending ? 'Guardando...' : combo ? 'Guardar cambios' : 'Crear combo'}
         </button>
-        <a href="/catalog/combos" className="rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted">
+        <Link href="/catalog/combos" className="rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted">
           Cancelar
-        </a>
+        </Link>
       </div>
     </form>
   )

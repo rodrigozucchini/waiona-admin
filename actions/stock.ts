@@ -95,7 +95,7 @@ export async function createStockLocation(
     return { status: 'error', message: 'Error al crear la ubicación' }
   }
 
-  revalidateTag('stock', 'default')
+  revalidateTag('stock', 'max')
   return { status: 'success' }
 }
 
@@ -120,7 +120,7 @@ export async function updateStockLocation(
     return { status: 'error', message: 'Error al actualizar' }
   }
 
-  revalidateTag('stock', 'default')
+  revalidateTag('stock', 'max')
   return { status: 'success' }
 }
 
@@ -132,7 +132,7 @@ export async function deleteStockLocation(id: number): Promise<StockActionState>
     return { status: 'error', message: 'Error al eliminar' }
   }
 
-  revalidateTag('stock', 'default')
+  revalidateTag('stock', 'max')
   return { status: 'success' }
 }
 
@@ -164,7 +164,7 @@ export async function createStockItem(
     return { status: 'error', message: 'Error al crear el ítem de stock' }
   }
 
-  revalidateTag('stock', 'default')
+  revalidateTag('stock', 'max')
   redirect(`/stock/items/${newItem.id}`)
 }
 
@@ -187,7 +187,7 @@ export async function addStock(
     return { status: 'error', message: 'Error al agregar stock' }
   }
 
-  revalidateTag('stock', 'default')
+  revalidateTag('stock', 'max')
   return { status: 'success' }
 }
 
@@ -209,7 +209,7 @@ export async function writeOff(
     return { status: 'error', message: 'Error al registrar la baja' }
   }
 
-  revalidateTag('stock', 'default')
+  revalidateTag('stock', 'max')
   return { status: 'success' }
 }
 
@@ -245,7 +245,7 @@ export async function writeOffDamage(
     return { status: 'error', message: 'Error al registrar la baja por daño' }
   }
 
-  revalidateTag('stock', 'default')
+  revalidateTag('stock', 'max')
   return { status: 'success' }
 }
 
@@ -270,6 +270,6 @@ export async function updateThresholds(
     return { status: 'error', message: 'Error al actualizar umbrales' }
   }
 
-  revalidateTag('stock', 'default')
+  revalidateTag('stock', 'max')
   return { status: 'success' }
 }

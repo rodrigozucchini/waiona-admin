@@ -51,7 +51,7 @@ export async function createTaxType(
     return { status: 'error', message: 'Error al crear el tipo de impuesto' }
   }
 
-  revalidateTag('taxes', 'default')
+  revalidateTag('taxes', 'max')
   return { status: 'success' }
 }
 
@@ -63,7 +63,7 @@ export async function deleteTaxType(id: number): Promise<TaxActionState> {
     return { status: 'error', message: 'Error al eliminar el tipo de impuesto' }
   }
 
-  revalidateTag('taxes', 'default')
+  revalidateTag('taxes', 'max')
   redirect('/taxes')
 }
 
@@ -90,7 +90,7 @@ export async function createTax(
     return { status: 'error', message: 'Error al crear el impuesto' }
   }
 
-  revalidateTag('taxes', 'default')
+  revalidateTag('taxes', 'max')
   return { status: 'success' }
 }
 
@@ -102,7 +102,7 @@ export async function deleteTax(taxTypeId: number, taxId: number): Promise<TaxAc
     return { status: 'error', message: 'Error al eliminar el impuesto' }
   }
 
-  revalidateTag('taxes', 'default')
+  revalidateTag('taxes', 'max')
   return { status: 'success' }
 }
 
@@ -121,7 +121,7 @@ export async function assignTaxToProduct(productId: number, taxId: number): Prom
     return { status: 'error', message: 'Error al asignar el impuesto' }
   }
 
-  revalidateTag('taxes', 'default')
+  revalidateTag('taxes', 'max')
   return { status: 'success' }
 }
 
@@ -133,6 +133,6 @@ export async function removeTaxFromProduct(productId: number, assignmentId: numb
     return { status: 'error', message: 'Error al quitar el impuesto' }
   }
 
-  revalidateTag('taxes', 'default')
+  revalidateTag('taxes', 'max')
   return { status: 'success' }
 }
