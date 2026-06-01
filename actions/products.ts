@@ -58,7 +58,7 @@ export async function createProduct(
     return { status: 'error', message: 'Error al crear el producto' }
   }
 
-  revalidateTag('products', 'default')
+  revalidateTag('products', 'max')
   redirect('/catalog/products')
 }
 
@@ -93,7 +93,7 @@ export async function updateProduct(
     return { status: 'error', message: 'Error al actualizar el producto' }
   }
 
-  revalidateTag('products', 'default')
+  revalidateTag('products', 'max')
   return { status: 'success' }
 }
 
@@ -105,6 +105,6 @@ export async function deleteProduct(id: number): Promise<ProductActionState> {
     return { status: 'error', message: 'Error al eliminar el producto' }
   }
 
-  revalidateTag('products', 'default')
+  revalidateTag('products', 'max')
   redirect('/catalog/products')
 }

@@ -45,7 +45,7 @@ export async function uploadComboImage(
     return { status: 'error', message: err.message }
   }
 
-  revalidateTag('combos', 'default')
+  revalidateTag('combos', 'max')
   return { status: 'success' }
 }
 
@@ -60,7 +60,7 @@ export async function deleteComboImage(
     return { status: 'error', message: 'Error al eliminar la imagen' }
   }
 
-  revalidateTag('combos', 'default')
+  revalidateTag('combos', 'max')
   return { status: 'success' }
 }
 
@@ -80,6 +80,6 @@ export async function updateComboImagePosition(
     return { status: 'error', message: 'Error al actualizar la posición' }
   }
 
-  revalidateTag('combos', 'default')
+  revalidateTag('combos', 'max')
   return { status: 'success' }
 }

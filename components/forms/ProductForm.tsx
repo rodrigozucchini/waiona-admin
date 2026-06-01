@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useEffect } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import type { Product, Category } from '@/types'
 import type { ProductActionState } from '@/actions/products'
@@ -165,12 +166,12 @@ export function ProductForm({ action, product, categories }: Props) {
         >
           {isPending ? 'Guardando...' : product ? 'Guardar cambios' : 'Crear producto'}
         </button>
-        <a
+        <Link
           href="/catalog/products"
           className="rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted"
         >
           Cancelar
-        </a>
+        </Link>
       </div>
     </form>
   )

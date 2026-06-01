@@ -33,6 +33,6 @@ export async function updateOrderStatus(
     return { status: 'error', message: 'Error al actualizar el estado' }
   }
 
-  revalidateTag('orders', 'default')
+  revalidateTag('orders', 'max')
   return { status: 'success' }
 }

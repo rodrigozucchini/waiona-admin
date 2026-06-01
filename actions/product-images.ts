@@ -46,7 +46,7 @@ export async function uploadProductImage(
     return { status: 'error', message: err.message }
   }
 
-  revalidateTag('products', 'default')
+  revalidateTag('products', 'max')
   return { status: 'success' }
 }
 
@@ -61,7 +61,7 @@ export async function deleteProductImage(
     return { status: 'error', message: 'Error al eliminar la imagen' }
   }
 
-  revalidateTag('products', 'default')
+  revalidateTag('products', 'max')
   return { status: 'success' }
 }
 
@@ -81,6 +81,6 @@ export async function updateImagePosition(
     return { status: 'error', message: 'Error al actualizar la posición' }
   }
 
-  revalidateTag('products', 'default')
+  revalidateTag('products', 'max')
   return { status: 'success' }
 }
