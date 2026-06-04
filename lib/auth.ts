@@ -18,17 +18,21 @@ export async function requireSession() {
 export async function setTokenCookies(accessToken: string, refreshToken: string) {
   const cookieStore = await cookies()
 
+  const secure = process.env.NODE_ENV === 'production'
+
   cookieStore.set('access_token', accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure,
     sameSite: 'lax',
+    maxAge: 60 * 15, // 15 min — igual que expiresIn del JWT
     path: '/',
   })
 
   cookieStore.set('refresh_token', refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure,
     sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 7, // 7 días
     path: '/',
   })
 }

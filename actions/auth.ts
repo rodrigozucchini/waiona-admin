@@ -35,12 +35,30 @@ export async function loginAction(
 
 export async function logoutAction() {
   const cookieStore = await cookies()
-  const token = cookieStore.get('access_token')?.value
+  // El refresh token ES la credencial del logout — el access token puede haber expirado.
+  // La API no tiene AuthGuard('jwt') en este endpoint por ese motivo.
+  const refreshToken = cookieStore.get('refresh_token')?.value
 
-  if (token) {
+  if (refreshToken) {
     await fetch(`${process.env.API_URL}/auth/logout`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    }).catch(() => {})
+  }
+
+  await clearTokenCookies()
+  redirect('/login')
+}
+
+export async function logoutAllAction() {
+  const cookieStore = await cookies()
+  const accessToken = cookieStore.get('access_token')?.value
+
+  if (accessToken) {
+    await fetch(`${process.env.API_URL}/auth/logout-all`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}` },
     }).catch(() => {})
   }
 

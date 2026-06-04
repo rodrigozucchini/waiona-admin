@@ -6,41 +6,84 @@ JWT-based authentication for the admin panel. Tokens stored in **httpOnly cookie
 
 ## 1. Cookie Strategy
 
-- `access_token` — httpOnly, secure, sameSite=lax, short-lived
-- `refresh_token` — httpOnly, secure, sameSite=lax, longer-lived
+- `access_token` — httpOnly, secure, sameSite=lax, **maxAge: 15 min** (igual que `expiresIn` del JWT en el API)
+- `refresh_token` — httpOnly, secure, sameSite=lax, **maxAge: 7 días**
 - Never use `localStorage` or `sessionStorage` for tokens.
 - Never expose tokens to Client Components.
 
 ---
 
-## 2. middleware.ts
+## 2. proxy.ts (Next.js 16)
 
-Runs on every request. Redirects unauthenticated users to `/login`.
+> **Next.js 16**: el archivo se llama `proxy.ts` y la función exportada es `proxy` (no `middleware`).
+
+Corre en cada request. Intenta refresh silencioso si el access token expiró; redirige al login si el refresh también falla.
 
 ```typescript
-// middleware.ts (project root)
+// proxy.ts (project root)
 import { NextRequest, NextResponse } from 'next/server'
 
 const PUBLIC_PATHS = ['/login', '/api/auth']
 
-export function middleware(request: NextRequest) {
+function isTokenExpired(token: string): boolean {
+  try {
+    const [, payload] = token.split('.')
+    const { exp } = JSON.parse(Buffer.from(payload, 'base64url').toString())
+    return Date.now() >= exp * 1000
+  } catch {
+    return true
+  }
+}
+
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const token = request.cookies.get('access_token')?.value
+  const accessToken = request.cookies.get('access_token')?.value
+  const refreshToken = request.cookies.get('refresh_token')?.value
 
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p))
 
-  if (!isPublic && !token) {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('from', pathname)
-    return NextResponse.redirect(loginUrl)
-  }
-
-  // Already logged in → redirect away from login
-  if (pathname === '/login' && token) {
+  if (pathname === '/login' && accessToken && !isTokenExpired(accessToken)) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  return NextResponse.next()
+  if (isPublic) return NextResponse.next()
+
+  // Token válido → continuar
+  if (accessToken && !isTokenExpired(accessToken)) {
+    return NextResponse.next()
+  }
+
+  // Token expirado → intentar refresh
+  // POST /auth/refresh recibe { refresh_token } en el body (no requiere Bearer token)
+  if (refreshToken) {
+    try {
+      const res = await fetch(`${process.env.API_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      })
+
+      if (res.ok) {
+        const { access_token: newToken, refresh_token: newRefresh } = await res.json()
+        const response = NextResponse.next()
+        const secure = process.env.NODE_ENV === 'production'
+
+        response.cookies.set('access_token', newToken, {
+          httpOnly: true, secure, sameSite: 'lax', maxAge: 60 * 15, path: '/',
+        })
+        response.cookies.set('refresh_token', newRefresh, {
+          httpOnly: true, secure, sameSite: 'lax', maxAge: 60 * 60 * 24 * 7, path: '/',
+        })
+        return response
+      }
+    } catch {
+      // Error de red — caer al redirect
+    }
+  }
+
+  const loginUrl = new URL('/login', request.url)
+  loginUrl.searchParams.set('from', pathname)
+  return NextResponse.redirect(loginUrl)
 }
 
 export const config = {
@@ -75,16 +118,17 @@ export async function setTokenCookies(
   refreshToken: string
 ) {
   const cookieStore = await cookies()
+  const secure = process.env.NODE_ENV === 'production'
   cookieStore.set('access_token', accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure,
     sameSite: 'lax',
-    maxAge: 60 * 60, // 1 hour
+    maxAge: 60 * 15, // 15 min — igual que expiresIn del JWT
     path: '/',
   })
   cookieStore.set('refresh_token', refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure,
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 7, // 7 days
     path: '/',
@@ -158,19 +202,38 @@ export async function loginAction(_prev: unknown, formData: FormData) {
     return { error: err.message ?? 'Credenciales inválidas' }
   }
 
-  const { accessToken, refreshToken } = await res.json()
-  await setTokenCookies(accessToken, refreshToken)
+  const { access_token, refresh_token } = await res.json()
+  await setTokenCookies(access_token, refresh_token)
   redirect('/dashboard')
 }
 
+// POST /auth/logout — el refresh token ES la credencial.
+// El API no tiene AuthGuard('jwt') aquí porque el access token puede haber expirado.
 export async function logoutAction() {
   const cookieStore = await cookies()
-  const token = cookieStore.get('access_token')?.value
+  const refreshToken = cookieStore.get('refresh_token')?.value
 
-  if (token) {
+  if (refreshToken) {
     await fetch(`${process.env.API_URL}/auth/logout`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    }).catch(() => {})
+  }
+
+  await clearTokenCookies()
+  redirect('/login')
+}
+
+// POST /auth/logout-all — revoca todas las sesiones del usuario. Requiere JWT válido.
+export async function logoutAllAction() {
+  const cookieStore = await cookies()
+  const accessToken = cookieStore.get('access_token')?.value
+
+  if (accessToken) {
+    await fetch(`${process.env.API_URL}/auth/logout-all`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}` },
     }).catch(() => {})
   }
 
@@ -208,22 +271,11 @@ export default async function AdminLayout({
 
 ## 6. Token Refresh
 
-When the access token expires, refresh silently in the Route Handler:
+El refresh silencioso ocurre en `proxy.ts` (no en `lib/api.ts`). El API usa **token rotation**: el endpoint devuelve un nuevo `refresh_token` en cada llamada, y revoca el anterior.
 
-```typescript
-// lib/api.ts — add refresh logic
-async function refreshAccessToken(refreshToken: string) {
-  const res = await fetch(`${process.env.API_URL}/auth/refresh`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken }),
-  })
-  if (!res.ok) return null
-  return res.json() // { accessToken, refreshToken }
-}
-```
-
-The middleware intercepts 401 responses, attempts refresh, and retries. If refresh fails, clears cookies and redirects to `/login`.
+- **Request body**: `{ refresh_token: string }` — sin Bearer token (el access puede estar expirado)
+- **Response**: `{ access_token: string, refresh_token: string }` — snake_case
+- Si el refresh falla (token revocado/expirado), `proxy.ts` redirige a `/login`
 
 ---
 

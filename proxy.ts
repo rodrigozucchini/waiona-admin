@@ -36,11 +36,11 @@ export async function proxy(request: NextRequest) {
       const res = await fetch(`${process.env.API_URL}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify({ refresh_token: refreshToken }),
       })
 
       if (res.ok) {
-        const { accessToken: newToken, refreshToken: newRefresh } = await res.json()
+        const { access_token: newToken, refresh_token: newRefresh } = await res.json()
         const response = NextResponse.next()
         const secure = process.env.NODE_ENV === 'production'
 
@@ -48,7 +48,7 @@ export async function proxy(request: NextRequest) {
           httpOnly: true,
           secure,
           sameSite: 'lax',
-          maxAge: 60 * 60,
+          maxAge: 60 * 15, // 15 min — igual que expiresIn del JWT
           path: '/',
         })
         response.cookies.set('refresh_token', newRefresh, {
