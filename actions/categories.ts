@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { api, ApiError } from '@/lib/api'
@@ -45,7 +44,7 @@ export async function createCategory(
     return { status: 'error', message: 'Error al crear la categoría' }
   }
 
-  revalidateTag('categories', 'max')
+
   redirect('/catalog/categories')
 }
 
@@ -72,7 +71,7 @@ export async function updateCategory(
     return { status: 'error', message: 'Error al actualizar la categoría' }
   }
 
-  revalidateTag('categories', 'max')
+
   return { status: 'success' }
 }
 
@@ -84,6 +83,6 @@ export async function deleteCategory(id: number): Promise<CategoryActionState> {
     return { status: 'error', message: 'Error al eliminar la categoría' }
   }
 
-  revalidateTag('categories', 'max')
+
   redirect('/catalog/categories')
 }

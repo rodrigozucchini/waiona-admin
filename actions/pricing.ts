@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { api, ApiError } from '@/lib/api'
 import type { Margin, ProductPricing, ComboPricing } from '@/types'
@@ -62,7 +61,7 @@ export async function createMargin(
     return { status: 'error', message: 'Error al crear el margen' }
   }
 
-  revalidateTag('pricing', 'max')
+
   return { status: 'success' }
 }
 
@@ -87,7 +86,7 @@ export async function updateMargin(
     return { status: 'error', message: 'Error al actualizar el margen' }
   }
 
-  revalidateTag('pricing', 'max')
+
   return { status: 'success' }
 }
 
@@ -99,7 +98,7 @@ export async function deleteMargin(id: number): Promise<PricingActionState> {
     return { status: 'error', message: 'Error al eliminar el margen' }
   }
 
-  revalidateTag('pricing', 'max')
+
   return { status: 'success' }
 }
 
@@ -132,7 +131,7 @@ export async function createProductPricing(
     return { status: 'error', message: 'Error al crear el precio' }
   }
 
-  revalidateTag('pricing', 'max')
+
   return { status: 'success' }
 }
 
@@ -159,7 +158,7 @@ export async function updateProductPricing(
     return { status: 'error', message: 'Error al actualizar el precio' }
   }
 
-  revalidateTag('pricing', 'max')
+
   return { status: 'success' }
 }
 
@@ -171,7 +170,7 @@ export async function deleteProductPricing(id: number): Promise<PricingActionSta
     return { status: 'error', message: 'Error al eliminar el precio' }
   }
 
-  revalidateTag('pricing', 'max')
+
   return { status: 'success' }
 }
 
@@ -204,7 +203,7 @@ export async function createComboPricing(
     return { status: 'error', message: 'Error al crear el precio' }
   }
 
-  revalidateTag('pricing', 'max')
+
   return { status: 'success' }
 }
 
@@ -231,7 +230,7 @@ export async function updateComboPricing(
     return { status: 'error', message: 'Error al actualizar el precio' }
   }
 
-  revalidateTag('pricing', 'max')
+
   return { status: 'success' }
 }
 
@@ -243,6 +242,6 @@ export async function deleteComboPricing(id: number): Promise<PricingActionState
     return { status: 'error', message: 'Error al eliminar el precio' }
   }
 
-  revalidateTag('pricing', 'max')
+
   return { status: 'success' }
 }

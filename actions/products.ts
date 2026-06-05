@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { api, ApiError } from '@/lib/api'
@@ -58,7 +57,7 @@ export async function createProduct(
     return { status: 'error', message: 'Error al crear el producto' }
   }
 
-  revalidateTag('products', 'max')
+
   redirect('/catalog/products')
 }
 
@@ -93,7 +92,7 @@ export async function updateProduct(
     return { status: 'error', message: 'Error al actualizar el producto' }
   }
 
-  revalidateTag('products', 'max')
+
   return { status: 'success' }
 }
 
@@ -105,6 +104,6 @@ export async function deleteProduct(id: number): Promise<ProductActionState> {
     return { status: 'error', message: 'Error al eliminar el producto' }
   }
 
-  revalidateTag('products', 'max')
+
   redirect('/catalog/products')
 }

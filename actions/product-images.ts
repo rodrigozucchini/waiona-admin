@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidateTag } from 'next/cache'
 import { cookies } from 'next/headers'
 import { api, ApiError } from '@/lib/api'
 import type { ProductImage } from '@/types'
@@ -46,7 +45,7 @@ export async function uploadProductImage(
     return { status: 'error', message: err.message }
   }
 
-  revalidateTag('products', 'max')
+
   return { status: 'success' }
 }
 
@@ -61,7 +60,7 @@ export async function deleteProductImage(
     return { status: 'error', message: 'Error al eliminar la imagen' }
   }
 
-  revalidateTag('products', 'max')
+
   return { status: 'success' }
 }
 
@@ -81,6 +80,6 @@ export async function updateImagePosition(
     return { status: 'error', message: 'Error al actualizar la posición' }
   }
 
-  revalidateTag('products', 'max')
+
   return { status: 'success' }
 }

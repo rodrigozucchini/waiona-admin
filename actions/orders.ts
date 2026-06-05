@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { api, ApiError } from '@/lib/api'
 
@@ -33,6 +32,6 @@ export async function updateOrderStatus(
     return { status: 'error', message: 'Error al actualizar el estado' }
   }
 
-  revalidateTag('orders', 'max')
+
   return { status: 'success' }
 }
