@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { api, ApiError } from '@/lib/api'
@@ -60,7 +59,7 @@ export async function createCombo(
     return { status: 'error', message: 'Error al crear el combo' }
   }
 
-  revalidateTag('combos', 'max')
+
   redirect('/catalog/combos')
 }
 
@@ -99,7 +98,7 @@ export async function updateCombo(
     return { status: 'error', message: 'Error al actualizar el combo' }
   }
 
-  revalidateTag('combos', 'max')
+
   return { status: 'success' }
 }
 
@@ -111,6 +110,6 @@ export async function deleteCombo(id: number): Promise<ComboActionState> {
     return { status: 'error', message: 'Error al eliminar el combo' }
   }
 
-  revalidateTag('combos', 'max')
+
   redirect('/catalog/combos')
 }

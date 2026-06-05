@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { api, ApiError } from '@/lib/api'
@@ -69,7 +68,7 @@ export async function createCoupon(
     return { status: 'error', message: 'Error al crear el cupón' }
   }
 
-  revalidateTag('coupons', 'max')
+
   redirect(`/promotions/coupons/${couponId}`)
 }
 
@@ -80,7 +79,7 @@ export async function deleteCoupon(id: number): Promise<PromotionActionState> {
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al eliminar el cupón' }
   }
-  revalidateTag('coupons', 'max')
+
   redirect('/promotions/coupons')
 }
 
@@ -91,7 +90,7 @@ export async function addCouponProductTarget(couponId: number, productId: number
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al asignar producto' }
   }
-  revalidateTag('coupons', 'max')
+
   return { status: 'success' }
 }
 
@@ -102,7 +101,7 @@ export async function removeCouponProductTarget(couponId: number, productId: num
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al remover producto' }
   }
-  revalidateTag('coupons', 'max')
+
   return { status: 'success' }
 }
 
@@ -113,7 +112,7 @@ export async function addCouponComboTarget(couponId: number, comboId: number): P
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al asignar combo' }
   }
-  revalidateTag('coupons', 'max')
+
   return { status: 'success' }
 }
 
@@ -124,7 +123,7 @@ export async function removeCouponComboTarget(couponId: number, comboId: number)
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al remover combo' }
   }
-  revalidateTag('coupons', 'max')
+
   return { status: 'success' }
 }
 
@@ -163,7 +162,7 @@ export async function createDiscount(
     return { status: 'error', message: 'Error al crear el descuento' }
   }
 
-  revalidateTag('discounts', 'max')
+
   redirect(`/promotions/discounts/${discountId}`)
 }
 
@@ -199,7 +198,7 @@ export async function updateDiscount(
     return { status: 'error', message: 'Error al actualizar el descuento' }
   }
 
-  revalidateTag('discounts', 'max')
+
   return { status: 'success' }
 }
 
@@ -210,7 +209,7 @@ export async function deleteDiscount(id: number): Promise<PromotionActionState> 
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al eliminar el descuento' }
   }
-  revalidateTag('discounts', 'max')
+
   redirect('/promotions/discounts')
 }
 
@@ -224,7 +223,7 @@ export async function addDiscountProductTarget(discountId: number, productId: nu
     }
     return { status: 'error', message: 'Error al asignar producto' }
   }
-  revalidateTag('discounts', 'max')
+
   return { status: 'success' }
 }
 
@@ -235,7 +234,7 @@ export async function removeDiscountProductTarget(discountId: number, productId:
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al remover producto' }
   }
-  revalidateTag('discounts', 'max')
+
   return { status: 'success' }
 }
 
@@ -249,7 +248,7 @@ export async function addDiscountComboTarget(discountId: number, comboId: number
     }
     return { status: 'error', message: 'Error al asignar combo' }
   }
-  revalidateTag('discounts', 'max')
+
   return { status: 'success' }
 }
 
@@ -260,6 +259,6 @@ export async function removeDiscountComboTarget(discountId: number, comboId: num
     if (err instanceof ApiError) return { status: 'error', message: err.message }
     return { status: 'error', message: 'Error al remover combo' }
   }
-  revalidateTag('discounts', 'max')
+
   return { status: 'success' }
 }

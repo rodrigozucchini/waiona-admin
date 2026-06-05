@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidateTag } from 'next/cache'
 import { cookies } from 'next/headers'
 import { api, ApiError } from '@/lib/api'
 import type { ComboImage } from '@/types'
@@ -45,7 +44,7 @@ export async function uploadComboImage(
     return { status: 'error', message: err.message }
   }
 
-  revalidateTag('combos', 'max')
+
   return { status: 'success' }
 }
 
@@ -60,7 +59,7 @@ export async function deleteComboImage(
     return { status: 'error', message: 'Error al eliminar la imagen' }
   }
 
-  revalidateTag('combos', 'max')
+
   return { status: 'success' }
 }
 
@@ -80,6 +79,6 @@ export async function updateComboImagePosition(
     return { status: 'error', message: 'Error al actualizar la posición' }
   }
 
-  revalidateTag('combos', 'max')
+
   return { status: 'success' }
 }
