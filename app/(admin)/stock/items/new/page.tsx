@@ -1,13 +1,12 @@
 import { api } from '@/lib/api'
 import Link from 'next/link'
-import { getStockLocations } from '@/lib/cache'
-import type { PaginatedResponse, Product } from '@/types'
+import type { PaginatedResponse, Product, StockLocation } from '@/types'
 import { NewStockItemForm } from './NewStockItemForm'
 
 export default async function NewStockItemPage() {
   const [products, locations] = await Promise.all([
     api.get<PaginatedResponse<Product>>('/products?limit=200'),
-    getStockLocations(),
+    api.get<PaginatedResponse<StockLocation>>('/stock-locations?limit=100').then((r) => r.data),
   ])
 
   return (

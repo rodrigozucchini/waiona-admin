@@ -1,18 +1,8 @@
-import { unstable_cache } from 'next/cache'
-import { cookies } from 'next/headers'
 import { api } from '@/lib/api'
 import type { TopProductItem } from '@/types'
 
-const getTopProducts = unstable_cache(
-  (token: string) => api.get<TopProductItem[]>('/analytics/products/top', { token }),
-  ['analytics-top-products'],
-  { revalidate: 60, tags: ['analytics'] }
-)
-
 export async function TopProductsWidget() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('access_token')?.value ?? ''
-  const data = await getTopProducts(token)
+  const data = await api.get<TopProductItem[]>('/analytics/products/top')
 
   if (data.length === 0) {
     return (

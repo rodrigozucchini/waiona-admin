@@ -1,13 +1,12 @@
 import { api } from '@/lib/api'
-import { getMargins } from '@/lib/cache'
-import type { PaginatedResponse, Combo, ComboPricing, PriceBreakdown } from '@/types'
+import type { PaginatedResponse, Combo, ComboPricing, PriceBreakdown, Margin } from '@/types'
 import { ComboPricingClient } from './ComboPricingClient'
 
 export default async function ComboPricingPage() {
   const [combosResult, pricingsResult, margins] = await Promise.all([
     api.get<PaginatedResponse<Combo>>('/combos?limit=100'),
     api.get<PaginatedResponse<ComboPricing>>('/combo-pricing?limit=100'),
-    getMargins(),
+    api.get<PaginatedResponse<Margin>>('/margins?limit=100').then((r) => r.data),
   ])
 
   const calcResults = await Promise.allSettled(

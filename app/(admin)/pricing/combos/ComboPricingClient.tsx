@@ -321,7 +321,7 @@ function ComboPricingRow({
             ? <span className="line-through">{fmt(breakdown.fullPrice)}</span>
             : <span className="text-xs">—</span>}
         </td>
-        <td className="px-4 py-3 text-muted-foreground">{getMarginLabel(pricing.marginId)}</td>
+        <td className="px-4 py-3 text-muted-foreground">{getMarginLabel(pricing.marginId ?? null)}</td>
         <td className="px-4 py-3">
           <div className="flex justify-end gap-3">
             {breakdown && (

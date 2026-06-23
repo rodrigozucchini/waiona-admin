@@ -1,7 +1,7 @@
 import { api, ApiError } from '@/lib/api'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import type { StockItem, Product } from '@/types'
+import type { StockItem, StockMovement, PaginatedResponse, Product } from '@/types'
 import { StockItemClient } from './StockItemClient'
 import { formatDate } from '@/lib/utils'
 
@@ -14,6 +14,7 @@ export default async function StockItemPage({
 
   let item: StockItem
   let product: Product | null = null
+  let movements: StockMovement[] = []
 
   try {
     item = await api.get<StockItem>(`/stock-items/${id}`)
@@ -22,11 +23,13 @@ export default async function StockItemPage({
     throw err
   }
 
-  try {
-    product = await api.get<Product>(`/products/${item.productId}`)
-  } catch {
-    // product might be deleted; proceed without it
-  }
+  const [productResult, movementsResult] = await Promise.allSettled([
+    api.get<Product>(`/products/${item.productId}`),
+    api.get<PaginatedResponse<StockMovement>>(`/stock-movements/stock-item/${id}?limit=100`),
+  ])
+
+  if (productResult.status === 'fulfilled') product = productResult.value
+  if (movementsResult.status === 'fulfilled') movements = movementsResult.value.data
 
   const operationLabels: Record<string, string> = {
     ENTRY: 'Ingreso',
@@ -89,7 +92,7 @@ export default async function StockItemPage({
         {/* Right: movement history */}
         <div className="lg:col-span-2">
           <h2 className="font-medium mb-3">Historial de movimientos</h2>
-          {!item.movements || item.movements.length === 0 ? (
+          {movements.length === 0 ? (
             <p className="text-sm text-muted-foreground">Sin movimientos registrados.</p>
           ) : (
             <div className="rounded-lg border">
@@ -104,7 +107,7 @@ export default async function StockItemPage({
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {item.movements.map((mov) => (
+                  {movements.map((mov) => (
                     <tr key={mov.id} className="hover:bg-muted/30">
                       <td className="px-4 py-3">
                         {operationLabels[mov.operationType] ?? mov.operationType}

@@ -4,7 +4,6 @@ const BASE = process.env.API_URL
 
 type ApiOptions = Omit<RequestInit, 'body'> & {
   body?: unknown
-  token?: string
 }
 
 export class ApiError extends Error {
@@ -18,30 +17,23 @@ export class ApiError extends Error {
   }
 }
 
-export function isApiError(err: unknown): err is ApiError {
-  return err instanceof ApiError
-}
-
 export async function apiRequest<T>(
   path: string,
   options: ApiOptions = {}
 ): Promise<T> {
-  const { body, token, ...init } = options
+  const { body, ...init } = options
 
-  let sessionToken = token
-  if (!sessionToken) {
-    const cookieStore = await cookies()
-    sessionToken = cookieStore.get('access_token')?.value
-  }
+  const cookieStore = await cookies()
+  const sessionToken = cookieStore.get('access_token')?.value
 
   const res = await fetch(`${BASE}${path}`, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
+      ...(body !== undefined && !(body instanceof FormData) && { 'Content-Type': 'application/json' }),
       ...(sessionToken && { Authorization: `Bearer ${sessionToken}` }),
       ...init.headers,
     },
-    ...(body !== undefined && { body: JSON.stringify(body) }),
+    ...(body !== undefined && { body: body instanceof FormData ? body : JSON.stringify(body) }),
   })
 
   if (res.status === 429) {

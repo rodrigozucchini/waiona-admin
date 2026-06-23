@@ -1,20 +1,10 @@
-import { unstable_cache } from 'next/cache'
-import { cookies } from 'next/headers'
 import { api } from '@/lib/api'
 import { KpiCard } from './KpiCard'
 import { formatCurrency } from '@/lib/utils'
 import type { OrderAnalytics } from '@/types'
 
-const getOrderAnalytics = unstable_cache(
-  (token: string) => api.get<OrderAnalytics>('/analytics/orders', { token }),
-  ['analytics-orders'],
-  { revalidate: 60, tags: ['analytics'] }
-)
-
 export async function OrderSummaryWidget() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('access_token')?.value ?? ''
-  const data = await getOrderAnalytics(token)
+  const data = await api.get<OrderAnalytics>('/analytics/orders')
 
   return (
     <>

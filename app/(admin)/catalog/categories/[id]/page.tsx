@@ -4,8 +4,7 @@ import { notFound } from 'next/navigation'
 import { CategoryForm } from '@/components/forms/CategoryForm'
 import { updateCategory, deleteCategory } from '@/actions/categories'
 import { DeleteButton } from '@/components/shared/DeleteButton'
-import { getCategories } from '@/lib/cache'
-import type { Category } from '@/types'
+import type { Category, PaginatedResponse } from '@/types'
 
 export default async function EditCategoryPage({
   params,
@@ -22,7 +21,7 @@ export default async function EditCategoryPage({
     throw err
   }
 
-  const categories = await getCategories()
+  const categories = await api.get<PaginatedResponse<Category>>('/categories?limit=100').then((r) => r.data)
   const updateWithId = updateCategory.bind(null, category.id)
   const deleteWithId = deleteCategory.bind(null, category.id)
 

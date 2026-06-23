@@ -13,31 +13,33 @@ export interface PaginatedResponse<T> {
 
 export type RoleType = 'super_admin' | 'admin' | 'client'
 
+export type CurrencyCode = 'ARS'
+// USD existe en el enum del backend pero está comentado — no usar
+
 export type OrderStatus = 'pending' | 'confirmed' | 'dispatched' | 'delivered' | 'cancelled'
+
+export type DeliveryType = 'delivery' | 'pickup'
 
 export type PaymentStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
 
 export type PaymentProvider = 'mercadopago' | 'stripe'
 
-export type DeliveryType = 'pickup' | 'delivery'
+export type CouponStatus = 'active' | 'scheduled' | 'expired' | 'exhausted'
 
 export type StockLocationType = 'WAREHOUSE' | 'STORE' | 'VIRTUAL'
 
 export type StockOperationType = 'ENTRY' | 'EXIT' | 'ADJUSTMENT' | 'DAMAGE' | 'RETURN' | 'INITIAL'
 
-export type StockFlowType = 'INBOUND' | 'OUTBOUND'
+export type StockFlow = 'INBOUND' | 'OUTBOUND'
 
-export type StockReferenceType = 'MANUAL' | 'ORDER' | 'PURCHASE_ORDER' | 'ADJUSTMENT' | 'DAMAGE_REPORT'
+export type StockReferenceType = 'ORDER' | 'PURCHASE_ORDER' | 'ADJUSTMENT' | 'DAMAGE_REPORT' | 'MANUAL'
 
 export type StockWriteoffReason = 'DAMAGED' | 'EXPIRED' | 'DEFECTIVE' | 'CONTAMINATED' | 'LOST' | 'INVENTORY_ERROR' | 'OTHER'
-
-export type CurrencyCode = 'ARS' | 'USD'
 
 export type ProductMeasurementUnit = 'unit' | 'kg' | 'gram' | 'liter' | 'ml' | 'meter' | 'cm' | 'pack' | 'box' | 'dozen'
 
 export type DiscountStatus = 'active' | 'scheduled' | 'expired'
-
-export type CouponStatus = 'active' | 'scheduled' | 'expired' | 'exhausted'
+// label calculado en el frontend — el backend NO lo devuelve en el DTO
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
@@ -62,7 +64,7 @@ export interface User {
   email: string
   isActive: boolean
   role: RoleType | null
-  profile: Profile | null
+  profile: Profile
   createdAt: string
   updatedAt: string
 }
@@ -73,11 +75,16 @@ export interface Category {
   id: number
   name: string
   description?: string
-  parentId: number | null
-  children?: Category[]
   isActive: boolean
+  parentId: number | null
   createdAt: string
   updatedAt: string
+}
+
+export interface CategoryTree {
+  id: number
+  name: string
+  children: CategoryTree[]
 }
 
 export interface CreateCategoryDto {
@@ -108,15 +115,14 @@ export interface Product {
   id: number
   sku: string
   name: string
-  description: string | null
+  description: string
   isActive: boolean
-  measurementUnit: ProductMeasurementUnit
-  measurementValue: number | null
   categoryId: number
   categoryName: string
+  measurementUnit: ProductMeasurementUnit
+  measurementValue?: number
   createdAt: string
   updatedAt: string
-  deletedAt: string | null
 }
 
 export interface CreateProductDto {
@@ -165,7 +171,6 @@ export interface Combo {
   items: ComboItem[]
   createdAt: string
   updatedAt: string
-  deletedAt: string | null
 }
 
 export interface CreateComboDto {
@@ -190,7 +195,7 @@ export interface StockLocation {
   id: number
   name: string
   type: StockLocationType
-  address: string | null
+  address?: string
   createdAt: string
   updatedAt: string
 }
@@ -199,10 +204,10 @@ export interface StockMovement {
   id: number
   stockItemId: number
   operationType: StockOperationType
-  stockFlow: StockFlowType
+  stockFlow: StockFlow
   quantity: number
   referenceType: StockReferenceType
-  referenceId: number | null
+  referenceId?: number
   createdAt: string
 }
 
@@ -217,9 +222,12 @@ export interface StockItem {
   quantityAvailable: number
   stockMin: number
   stockCritical: number
-  movements?: StockMovement[]
   createdAt: string
   updatedAt: string
+}
+
+export interface StockItemWithMovements extends StockItem {
+  movements: StockMovement[]
 }
 
 export interface StockWriteOff {
@@ -228,8 +236,8 @@ export interface StockWriteOff {
   movementId: number
   quantity: number
   reason: StockWriteoffReason
-  description: string | null
-  attachments: string[]
+  description?: string
+  attachments?: string[]
   reportedBy: number
   createdAt: string
   updatedAt: string
@@ -248,9 +256,9 @@ export interface Margin {
 export interface ProductPricing {
   id: number
   productId: number
-  currency: string
+  currency: CurrencyCode
   unitPrice: number
-  marginId: number | null
+  marginId?: number | null
   createdAt: string
   updatedAt: string
 }
@@ -258,9 +266,9 @@ export interface ProductPricing {
 export interface ComboPricing {
   id: number
   comboId: number
-  currency: string
+  currency: CurrencyCode
   unitPrice: number
-  marginId: number | null
+  marginId?: number | null
   createdAt: string
   updatedAt: string
 }
@@ -290,8 +298,8 @@ export interface TaxType {
 
 export interface Tax {
   id: number
-  taxTypeId: number
-  taxType?: TaxType
+  code: string
+  name: string
   value: number
   isGlobal: boolean
   createdAt: string
@@ -302,11 +310,39 @@ export interface ProductTax {
   id: number
   productId: number
   taxId: number
+  tax?: Tax
   createdAt: string
   updatedAt: string
 }
 
-// ─── Promotions ───────────────────────────────────────────────────────────────
+// ─── Discounts ────────────────────────────────────────────────────────────────
+
+export interface Discount {
+  id: number
+  name: string
+  description?: string
+  value: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface DiscountProductTarget {
+  id: number
+  discountId: number
+  productId: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface DiscountComboTarget {
+  id: number
+  discountId: number
+  comboId: number
+  createdAt: string
+  updatedAt: string
+}
+
+// ─── Coupons ──────────────────────────────────────────────────────────────────
 
 export interface Coupon {
   id: number
@@ -348,34 +384,6 @@ export interface CouponUsage {
   updatedAt: string
 }
 
-export interface Discount {
-  id: number
-  name: string
-  description: string | null
-  status: DiscountStatus
-  value: number
-  startsAt: string | null
-  endsAt: string | null
-  createdAt: string
-  updatedAt: string
-}
-
-export interface DiscountProductTarget {
-  id: number
-  discountId: number
-  productId: number
-  createdAt: string
-  updatedAt: string
-}
-
-export interface DiscountComboTarget {
-  id: number
-  discountId: number
-  comboId: number
-  createdAt: string
-  updatedAt: string
-}
-
 // ─── Orders ───────────────────────────────────────────────────────────────────
 
 export interface OrderItem {
@@ -389,18 +397,6 @@ export interface OrderItem {
   finalPrice: number
 }
 
-export interface Payment {
-  id: number
-  orderId: number
-  provider: PaymentProvider
-  status: PaymentStatus
-  externalId: string | null
-  checkoutUrl: string | null
-  amount: number
-  createdAt: string
-  updatedAt: string
-}
-
 export interface Order {
   id: number
   userId: number
@@ -412,12 +408,26 @@ export interface Order {
   couponDiscount: number | null
   couponCode: string | null
   total: number
-  items?: OrderItem[]
+  items: OrderItem[]
   createdAt: string
   updatedAt: string
 }
 
-// ─── Shop (consumed by mobile client, exposed here for reference) ─────────────
+// ─── Payments ─────────────────────────────────────────────────────────────────
+
+export interface Payment {
+  id: number
+  orderId: number
+  provider: PaymentProvider
+  status: PaymentStatus
+  externalId?: string | null
+  checkoutUrl?: string | null
+  amount: number
+  createdAt: string
+  updatedAt: string
+}
+
+// ─── Shop ─────────────────────────────────────────────────────────────────────
 
 export type StockStatus = 'available' | 'low' | 'critical' | 'out_of_stock'
 
@@ -431,13 +441,14 @@ export interface ShopItem {
   hasDiscount: boolean
   inStock: boolean
   quantityAvailable: number
+  category?: string
   image?: string
 }
 
 export interface ShopDetail {
   id: number
   name: string
-  description: string
+  description?: string
   type: 'product' | 'combo'
   originalPrice: number
   finalPrice: number
@@ -448,8 +459,18 @@ export interface ShopDetail {
   inStock: boolean
   quantityAvailable: number
   stockStatus: StockStatus
+  category?: string
   images: string[]
   items?: ComboItem[]
+}
+
+export interface ShopPaginatedResponse {
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+  hasNextPage: boolean
+  data: ShopItem[]
 }
 
 // ─── Analytics ────────────────────────────────────────────────────────────────

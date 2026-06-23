@@ -4,8 +4,7 @@ import { notFound } from 'next/navigation'
 import { ProductForm } from '@/components/forms/ProductForm'
 import { updateProduct, deleteProduct } from '@/actions/products'
 import { DeleteButton } from '@/components/shared/DeleteButton'
-import { getCategories } from '@/lib/cache'
-import type { Product, ProductImage } from '@/types'
+import type { Product, ProductImage, PaginatedResponse, Category } from '@/types'
 
 export default async function EditProductPage({
   params,
@@ -23,7 +22,7 @@ export default async function EditProductPage({
   }
 
   const [categories, images] = await Promise.all([
-    getCategories(),
+    api.get<PaginatedResponse<Category>>('/categories?limit=100').then((r) => r.data),
     api.get<ProductImage[]>(`/product-images/product/${id}`).catch(() => [] as ProductImage[]),
   ])
 

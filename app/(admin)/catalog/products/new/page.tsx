@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { ProductForm } from '@/components/forms/ProductForm'
 import { createProduct } from '@/actions/products'
-import { getCategories } from '@/lib/cache'
+import { api } from '@/lib/api'
+import type { PaginatedResponse, Category } from '@/types'
 
 export default async function NewProductPage() {
-  const categories = await getCategories()
+  const categories = await api.get<PaginatedResponse<Category>>('/categories?limit=100').then((r) => r.data)
 
   return (
     <div className="space-y-6">

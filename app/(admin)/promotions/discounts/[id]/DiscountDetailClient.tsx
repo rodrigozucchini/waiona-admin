@@ -57,8 +57,6 @@ export function DiscountDetailClient({
     startTransition(async () => { await deleteDiscount(discount.id) })
   }
 
-  const formatDateValue = (iso: string | null) => iso?.split('T')[0] ?? ''
-
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       {/* Left: edit form + delete */}
@@ -102,29 +100,7 @@ export function DiscountDetailClient({
                 <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label htmlFor="startsAt" className="text-xs font-medium">Inicia</label>
-                <input
-                  id="startsAt"
-                  name="startsAt"
-                  type="date"
-                  defaultValue={formatDateValue(discount.startsAt)}
-                  className="w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-              <div className="space-y-1">
-                <label htmlFor="endsAt" className="text-xs font-medium">Vence</label>
-                <input
-                  id="endsAt"
-                  name="endsAt"
-                  type="date"
-                  defaultValue={formatDateValue(discount.endsAt)}
-                  className="w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-            </div>
-            {updateState.status === 'error' && (
+{updateState.status === 'error' && (
               <p role="alert" className="text-xs text-destructive">{updateState.message}</p>
             )}
             {updateState.status === 'success' && (

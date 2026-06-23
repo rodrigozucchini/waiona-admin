@@ -2,16 +2,10 @@ import { api, ApiError } from '@/lib/api'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type {
-  Discount, DiscountStatus, DiscountProductTarget, DiscountComboTarget,
+  Discount, DiscountProductTarget, DiscountComboTarget,
   PaginatedResponse, Product, Combo,
 } from '@/types'
 import { DiscountDetailClient } from './DiscountDetailClient'
-
-const statusConfig: Record<DiscountStatus, { label: string; className: string }> = {
-  active:    { label: 'Activo',     className: 'bg-green-100 text-green-700' },
-  scheduled: { label: 'Programado', className: 'bg-blue-100 text-blue-700' },
-  expired:   { label: 'Vencido',    className: 'bg-gray-100 text-gray-600' },
-}
 
 export default async function DiscountDetailPage({
   params,
@@ -42,8 +36,6 @@ export default async function DiscountDetailPage({
     ? comboTargetsRaw
     : ((comboTargetsRaw as PaginatedResponse<DiscountComboTarget>).data ?? [])
 
-  const cfg = statusConfig[discount.status]
-
   return (
     <div className="space-y-6">
       <div>
@@ -52,10 +44,7 @@ export default async function DiscountDetailPage({
           <span>/</span>
           <span className="text-foreground">{discount.name}</span>
         </nav>
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold">{discount.name}</h1>
-          <span className={`rounded px-2 py-0.5 text-xs ${cfg.className}`}>{cfg.label}</span>
-        </div>
+        <h1 className="text-2xl font-semibold">{discount.name}</h1>
         {discount.description && (
           <p className="text-sm text-muted-foreground mt-1">{discount.description}</p>
         )}

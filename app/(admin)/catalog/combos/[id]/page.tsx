@@ -4,8 +4,7 @@ import { notFound } from 'next/navigation'
 import { ComboForm } from '@/components/forms/ComboForm'
 import { updateCombo, deleteCombo } from '@/actions/combos'
 import { DeleteButton } from '@/components/shared/DeleteButton'
-import { getCategories } from '@/lib/cache'
-import type { PaginatedResponse, Combo, Product, ComboImage } from '@/types'
+import type { PaginatedResponse, Combo, Product, ComboImage, Category } from '@/types'
 
 export default async function EditComboPage({
   params,
@@ -23,7 +22,7 @@ export default async function EditComboPage({
   }
 
   const [categories, productsResult, images] = await Promise.all([
-    getCategories(),
+    api.get<PaginatedResponse<Category>>('/categories?limit=100').then((r) => r.data),
     api.get<PaginatedResponse<Product>>('/products?limit=100'),
     api.get<ComboImage[]>(`/combo-images/combo/${id}`).catch(() => [] as ComboImage[]),
   ])

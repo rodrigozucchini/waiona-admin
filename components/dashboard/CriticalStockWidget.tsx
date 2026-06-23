@@ -1,19 +1,9 @@
-import { unstable_cache } from 'next/cache'
-import { cookies } from 'next/headers'
 import { api } from '@/lib/api'
 import Link from 'next/link'
 import type { CriticalStockItem } from '@/types'
 
-const getCriticalStock = unstable_cache(
-  (token: string) => api.get<CriticalStockItem[]>('/analytics/stock/critical', { token }),
-  ['analytics-critical-stock'],
-  { revalidate: 60, tags: ['analytics'] }
-)
-
 export async function CriticalStockWidget() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('access_token')?.value ?? ''
-  const data = await getCriticalStock(token)
+  const data = await api.get<CriticalStockItem[]>('/analytics/stock/critical')
 
   if (data.length === 0) {
     return (

@@ -1,8 +1,9 @@
-import { getMargins } from '@/lib/cache'
+import { api } from '@/lib/api'
 import { MarginsClient } from './MarginsClient'
+import type { PaginatedResponse, Margin } from '@/types'
 
 export default async function MarginsPage() {
-  const margins = await getMargins()
+  const margins = await api.get<PaginatedResponse<Margin>>('/margins?limit=100').then((r) => r.data)
 
   return (
     <div className="space-y-6">

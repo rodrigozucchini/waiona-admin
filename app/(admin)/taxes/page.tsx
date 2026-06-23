@@ -1,8 +1,9 @@
-import { getTaxTypes } from '@/lib/cache'
+import { api } from '@/lib/api'
 import { TaxTypesClient } from './TaxTypesClient'
+import type { PaginatedResponse, TaxType } from '@/types'
 
 export default async function TaxesPage() {
-  const taxTypes = await getTaxTypes()
+  const taxTypes = await api.get<PaginatedResponse<TaxType>>('/tax-types?limit=100').then((r) => r.data)
 
   return (
     <div className="space-y-6">
