@@ -2,16 +2,9 @@
 
 import { cookies } from 'next/headers'
 import { apiRequest, ApiError } from '@/core/lib/api'
+import { cookieOptions } from '@/core/lib/cookies'
 import { AUTH_TOKEN_TTL, AUTH_COOKIES } from '@/core/config/constants'
 import type { LoginDto, LoginResponse } from '@/core/types'
-
-const cookieOptions = (maxAge: number) => ({
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  path: '/',
-  maxAge,
-})
 
 export async function login(data: LoginDto) {
   try {
