@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { API_URL } from '@/core/config/env'
+import { AUTH_COOKIES } from '@/core/config/constants'
 import type { ApiErrorResponse } from '@/core/types'
 
 export class ApiError extends Error {
@@ -19,7 +20,7 @@ interface RequestOptions {
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, query } = options
-  const token = (await cookies()).get('access_token')?.value
+  const token = (await cookies()).get(AUTH_COOKIES.accessToken)?.value
 
   const url = new URL(`${API_URL}${path}`)
   for (const [key, value] of Object.entries(query ?? {})) {
@@ -44,7 +45,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 }
 
 export async function apiUpload<T>(path: string, formData: FormData): Promise<T> {
-  const token = (await cookies()).get('access_token')?.value
+  const token = (await cookies()).get(AUTH_COOKIES.accessToken)?.value
 
   const res = await fetch(`${API_URL}${path}`, {
     method: 'POST',

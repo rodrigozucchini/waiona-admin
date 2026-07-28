@@ -25,3 +25,8 @@ export const AUTH_TOKEN_TTL = {
   accessTokenMinutes: 15,
   refreshTokenDays: 30,
 } as const
+
+export const AUTH_COOKIES = {
+  accessToken: 'access_token',
+  refreshToken: 'refresh_token',
+} as const
