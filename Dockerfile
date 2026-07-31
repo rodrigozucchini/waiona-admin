@@ -17,13 +17,15 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
+# non-root user, desactivado por el momento
+# RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+# COPY --chown=nextjs:nodejs en vez de las dos líneas de arriba, si se reactiva el user
 
-USER nextjs
+# USER nextjs
 EXPOSE 3000
 
 CMD ["node", "server.js"]
