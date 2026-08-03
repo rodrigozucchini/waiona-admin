@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { LogoutButton } from './LogoutButton'
+import { Nav } from './Nav'
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
@@ -8,7 +9,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <span className="font-semibold">Waiona Admin</span>
         <LogoutButton />
       </header>
-      <main className="flex-1 p-6">{children}</main>
+      <div className="flex flex-1">
+        <aside className="w-56 shrink-0 border-r p-4">
+          <Nav />
+        </aside>
+        <main className="flex-1 p-6">{children}</main>
+      </div>
     </div>
   )
 }
