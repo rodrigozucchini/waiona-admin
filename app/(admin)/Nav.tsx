@@ -10,6 +10,8 @@ const NAV_ITEMS = [
   { href: '/combos', label: 'Combos' },
   { href: '/taxes', label: 'Impuestos' },
   { href: '/discounts', label: 'Descuentos' },
+  { href: '/coupons', label: 'Cupones' },
+  { href: '/stock', label: 'Stock' },
   { href: '/users', label: 'Usuarios' },
 ]
 
