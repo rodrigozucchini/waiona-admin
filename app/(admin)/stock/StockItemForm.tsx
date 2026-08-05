@@ -1,0 +1,95 @@
+'use client'
+
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { createStockItem } from '@/actions/stock-item.actions'
+import type { ProductResponseDto, StockLocationResponseDto } from '@/core/types'
+
+interface StockItemFormProps {
+  products: ProductResponseDto[]
+  locations: StockLocationResponseDto[]
+}
+
+export function StockItemForm({ products, locations }: StockItemFormProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+  const [productId, setProductId] = useState(String(products[0]?.id ?? ''))
+  const [locationId, setLocationId] = useState(String(locations[0]?.id ?? ''))
+  const [stockMin, setStockMin] = useState('1')
+  const [stockCritical, setStockCritical] = useState('0')
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const payload = {
+      productId: Number(productId),
+      locationId: Number(locationId),
+      stockMin: Number(stockMin),
+      stockCritical: Number(stockCritical),
+    }
+
+    startTransition(async () => {
+      const result = await createStockItem(payload)
+      if (!result.success) {
+        toast.error(result.message)
+        return
+      }
+      toast.success('Item de stock creado')
+      router.push('/stock')
+    })
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex max-w-sm flex-col gap-4">
+      <select
+        required
+        value={productId}
+        onChange={(e) => setProductId(e.target.value)}
+        className="rounded border px-3 py-2"
+      >
+        {products.map((product) => (
+          <option key={product.id} value={product.id}>
+            {product.name}
+          </option>
+        ))}
+      </select>
+      <select
+        required
+        value={locationId}
+        onChange={(e) => setLocationId(e.target.value)}
+        className="rounded border px-3 py-2"
+      >
+        {locations.map((location) => (
+          <option key={location.id} value={location.id}>
+            {location.name}
+          </option>
+        ))}
+      </select>
+      <input
+        required
+        type="number"
+        min={1}
+        value={stockMin}
+        onChange={(e) => setStockMin(e.target.value)}
+        placeholder="Stock mínimo"
+        className="rounded border px-3 py-2"
+      />
+      <input
+        required
+        type="number"
+        min={0}
+        value={stockCritical}
+        onChange={(e) => setStockCritical(e.target.value)}
+        placeholder="Stock crítico"
+        className="rounded border px-3 py-2"
+      />
+      <button
+        type="submit"
+        disabled={isPending}
+        className="rounded bg-black px-3 py-2 text-white disabled:opacity-50"
+      >
+        {isPending ? 'Guardando...' : 'Guardar'}
+      </button>
+    </form>
+  )
+}
